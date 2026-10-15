@@ -1,0 +1,2522 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Stellvertretung</title>
+<script>try { const t = localStorage.getItem("sv_theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<style>
+  /* Farben nur über diese Variablen – Hell/Dunkel folgt der Geräteeinstellung oder der Wahl in ⚙️ (data-theme) */
+  :root {
+    --bg: #f1f5f9;
+    --card: #ffffff;
+    --surface-2: #f8fafc;
+    --input-bg: #ffffff;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --muted: #64748b;
+    --accent: #4f46e5;
+    --accent-dark: #4338ca;
+    --accent-soft: #eef2ff;
+    --on-accent: #ffffff;
+    --success: #15803d;
+    --success-soft: #f0fdf4;
+    --danger: #dc2626;
+    --danger-soft: #fef2f2;
+    --warn: #b45309;
+    --warn-soft: #fffbeb;
+    --shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 6px 18px rgba(15, 23, 42, 0.06);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --surface-2: #273449;
+      --input-bg: #0f172a;
+      --border: #334155;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #818cf8;
+      --accent-dark: #6366f1;
+      --accent-soft: #272b5c;
+      --on-accent: #0f172a;
+      --success: #4ade80;
+      --success-soft: #14321f;
+      --danger: #f87171;
+      --danger-soft: #3b1a1a;
+      --warn: #fbbf24;
+      --warn-soft: #3a2a0c;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --surface-2: #273449;
+    --input-bg: #0f172a;
+    --border: #334155;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --accent: #818cf8;
+    --accent-dark: #6366f1;
+    --accent-soft: #272b5c;
+    --on-accent: #0f172a;
+    --success: #4ade80;
+    --success-soft: #14321f;
+    --danger: #f87171;
+    --danger-soft: #3b1a1a;
+    --warn: #fbbf24;
+    --warn-soft: #3a2a0c;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.45;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  [hidden] { display: none !important; }
+
+  .app { max-width: 1180px; margin: 0 auto; padding: 16px 16px 120px; }
+  .view { display: none; }
+  .view.active { display: block; animation: fadeIn 0.18s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  h1 { font-size: 1.9rem; margin: 0; letter-spacing: -0.02em; }
+  h2 { font-size: 1.1rem; margin: 0 0 12px; }
+  .muted { color: var(--muted); }
+  .small { font-size: 0.85rem; }
+
+  .topbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .topbar h1, .topbar h2 { margin: 0; font-size: 1.35rem; flex: 1; min-width: 140px; }
+  .hero { display: flex; align-items: flex-start; gap: 12px; margin: 8px 0 18px; }
+  .hero > div { flex: 1; }
+  .hero p { margin: 4px 0 0; }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: var(--shadow); }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    border: 1px solid var(--border); background: var(--card); color: var(--text);
+    border-radius: 12px; padding: 10px 16px; font-weight: 600; min-height: 44px;
+    transition: transform 0.06s, background 0.15s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .btn-primary:hover { background: var(--accent-dark); }
+  .btn-outline { background: transparent; border-color: var(--accent); color: var(--accent); }
+  .btn-ghost { background: transparent; border-color: transparent; color: var(--muted); }
+  .btn-danger { background: transparent; border-color: var(--danger); color: var(--danger); }
+  .btn-big { width: 100%; min-height: 64px; font-size: 1.15rem; flex-direction: column; gap: 2px; }
+  .btn-big small { font-weight: 400; font-size: 0.82rem; opacity: 0.85; }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+  .icon-btn { border: 1px solid var(--border); background: var(--card); border-radius: 12px; width: 44px; height: 44px; font-size: 1.2rem; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    border: 1px solid var(--border); background: var(--surface-2); border-radius: 999px;
+    padding: 8px 14px; font-weight: 600; min-height: 40px;
+  }
+  .chip.on { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .field-label { display: block; font-weight: 600; margin: 14px 0 8px; }
+  .field-label:first-child { margin-top: 0; }
+  .hint { color: var(--muted); font-size: 0.85rem; margin: 6px 0 0; }
+
+  /* Teams */
+  .team-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .team-dot { width: 18px; height: 18px; border-radius: 50%; flex: none; }
+  .team-row input {
+    flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--input-bg);
+  }
+  .team-row .score { min-width: 60px; text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+  .stepper { display: inline-flex; align-items: center; gap: 0; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .stepper button { border: 0; background: var(--surface-2); width: 44px; height: 42px; font-size: 1.2rem; }
+  .stepper span { min-width: 44px; text-align: center; font-weight: 700; }
+
+  .scorebar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .score-chip {
+    display: flex; align-items: center; gap: 8px; border: 0; color: #fff;
+    border-radius: 12px; padding: 6px 12px; font-weight: 700; min-height: 40px;
+  }
+  .score-chip .pts { background: rgba(255, 255, 255, 0.22); border-radius: 8px; padding: 1px 8px; font-variant-numeric: tabular-nums; }
+  .score-chip.turn { outline: 3px solid var(--text); outline-offset: 2px; }
+  .score-chip.bump { animation: bump 0.5s; }
+  @keyframes bump { 40% { transform: scale(1.12); } }
+
+  /* Lektionsleiste */
+  .lesson-bar {
+    position: sticky; top: 0; z-index: 30; background: var(--accent-soft); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px; padding: 8px 16px; font-size: 0.95rem; flex-wrap: wrap;
+  }
+  .lesson-bar .lb-main { flex: 1; min-width: 180px; font-weight: 600; cursor: pointer; }
+  .lesson-bar .lb-time { font-variant-numeric: tabular-nums; font-weight: 700; }
+  .lesson-bar .over { color: var(--warn); }
+  .lesson-bar .btn { min-height: 36px; padding: 6px 12px; }
+
+  /* Plan */
+  .phase {
+    display: grid; grid-template-columns: 54px 1fr auto; gap: 12px; align-items: start;
+    border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-bottom: 10px; background: var(--card);
+  }
+  .phase.current { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
+  .phase.done { opacity: 0.6; }
+  .phase .ph-icon { font-size: 1.8rem; text-align: center; }
+  .phase .ph-min { font-size: 0.8rem; color: var(--muted); text-align: center; font-weight: 600; }
+  .phase h3 { margin: 0 0 4px; font-size: 1.05rem; }
+  .phase p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+  .plan-summary { display: flex; gap: 14px; flex-wrap: wrap; margin: 4px 0 14px; color: var(--muted); }
+
+  /* Quiz-Spielfeld */
+  .board { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 8px; }
+  .board-head {
+    background: var(--accent); color: var(--on-accent); border-radius: 12px; padding: 10px 6px; text-align: center;
+    font-weight: 700; font-size: clamp(0.75rem, 1.6vw, 1.05rem); display: flex; flex-direction: column; justify-content: center; min-height: 64px;
+    word-break: break-word; hyphens: auto;
+  }
+  .board-head .ic { font-size: 1.4em; line-height: 1.1; }
+  .cell {
+    border: 2px solid var(--border); background: var(--card); border-radius: 12px; min-height: clamp(56px, 11vh, 110px);
+    font-size: clamp(1.1rem, 3.2vw, 2.2rem); font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums;
+  }
+  .cell:hover { border-color: var(--accent); }
+  .cell.done { color: #fff; border-color: transparent; font-size: clamp(0.7rem, 1.4vw, 1rem); font-weight: 700; opacity: 0.85; }
+  .cell.done.none { background: var(--surface-2); color: var(--muted); }
+  .turn-banner { text-align: center; font-size: 1.2rem; font-weight: 700; margin: 4px 0 14px; }
+  .turn-banner span { padding: 4px 12px; border-radius: 10px; color: #fff; }
+
+  /* Frage */
+  .q-head { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .pill { background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px; font-weight: 600; }
+  .pill-strong { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .q-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: clamp(18px, 4vw, 40px); box-shadow: var(--shadow); }
+  .q-text { font-size: clamp(1.4rem, 3.6vw, 2.9rem); font-weight: 700; line-height: 1.25; margin: 0; text-wrap: balance; }
+  .q-text .seq { display: block; margin-top: 12px; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; color: var(--accent); }
+  .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 22px; }
+  .opt {
+    border: 2px solid var(--border); border-radius: 14px; padding: 12px 16px; font-size: clamp(1rem, 2.4vw, 1.7rem);
+    font-weight: 600; display: flex; gap: 12px; align-items: center; background: var(--surface-2);
+  }
+  .opt b { background: var(--accent); color: var(--on-accent); border-radius: 8px; padding: 0 10px; flex: none; }
+  .opt.correct { border-color: var(--success); background: var(--success-soft); }
+  .opt.wrong { opacity: 0.45; }
+  .answer {
+    margin-top: 22px; border-radius: 14px; padding: 14px 18px; background: var(--success-soft); border: 2px solid var(--success);
+    font-size: clamp(1.2rem, 3vw, 2.2rem); font-weight: 700;
+  }
+  .answer .lbl { display: block; font-size: 0.85rem; font-weight: 600; color: var(--success); text-transform: uppercase; letter-spacing: 0.05em; }
+  .q-controls { margin-top: 18px; display: flex; flex-direction: column; gap: 12px; }
+  .award { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .award .lbl { font-weight: 700; margin-right: 4px; }
+  .team-btn { border: 0; color: #fff; border-radius: 12px; padding: 10px 16px; font-weight: 700; min-height: 48px; font-size: 1.05rem; }
+  .team-btn.first { outline: 3px solid var(--text); outline-offset: 2px; }
+  .team-btn:disabled { opacity: 0.3; cursor: default; }
+  .buzz-msg { font-size: clamp(1.3rem, 3vw, 2rem); font-weight: 800; text-align: center; padding: 10px; border-radius: 14px; color: #fff; }
+
+  .countdown { display: flex; align-items: center; gap: 12px; margin-top: 18px; }
+  .cd-bar { flex: 1; height: 12px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--border); overflow: hidden; }
+  .cd-fill { height: 100%; width: 100%; background: var(--accent); transition: width 0.2s linear; }
+  .countdown.cd-low .cd-fill { background: var(--warn); }
+  .countdown.cd-done .cd-num { color: var(--warn); }
+  .cd-num { font-size: 1.5rem; font-weight: 800; min-width: 70px; text-align: right; font-variant-numeric: tabular-nums; }
+
+  .buzzers {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: grid; grid-template-columns: repeat(var(--n), 1fr);
+    gap: 6px; padding: 8px max(8px, env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom)); background: var(--bg); border-top: 1px solid var(--border);
+  }
+  .buzzer {
+    border: 0; border-radius: 16px; color: #fff; font-weight: 800; font-size: clamp(0.9rem, 2.2vw, 1.3rem);
+    min-height: 84px; touch-action: none; user-select: none; -webkit-user-select: none;
+  }
+  .buzzer kbd { display: block; font-size: 0.75rem; opacity: 0.8; font-family: inherit; }
+  .buzzer.locked { opacity: 0.25; }
+  .buzzer.winner { outline: 4px solid var(--text); outline-offset: -4px; }
+
+  /* Schätzduell */
+  .guess-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 20px; }
+  .guess { border-radius: 14px; padding: 10px; color: #fff; }
+  .guess label { display: block; font-weight: 700; margin-bottom: 6px; }
+  .guess input {
+    width: 100%; border: 0; border-radius: 10px; padding: 10px 12px; font-size: 1.3rem; font-weight: 700;
+    background: #fff; color: #0f172a; font-variant-numeric: tabular-nums;
+  }
+  .unit-hint { margin-top: 10px; font-size: 1.1rem; color: var(--muted); font-weight: 600; }
+  .numline { width: 100%; height: auto; margin-top: 18px; overflow: visible; }
+  .result-list { margin-top: 14px; display: grid; gap: 6px; }
+  .result-row { display: grid; grid-template-columns: 34px 1fr auto auto; gap: 10px; align-items: center; padding: 8px 12px; border-radius: 12px; background: var(--surface-2); }
+  .result-row .rk { font-weight: 800; font-size: 1.1rem; }
+  .result-row .nm { font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .result-row .gv { font-variant-numeric: tabular-nums; color: var(--muted); }
+  .result-row .pt { font-weight: 800; color: var(--success); font-variant-numeric: tabular-nums; min-width: 60px; text-align: right; }
+  .info-box { margin-top: 12px; color: var(--muted); font-size: 1.05rem; }
+
+  /* Teams-Anzeige, Pause, Podest */
+  .team-wall { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .team-tile { border-radius: 18px; padding: 22px; color: #fff; font-size: clamp(1.3rem, 3vw, 2rem); font-weight: 800; text-align: center; }
+  .rules { font-size: 1.15rem; }
+  .rules li { margin-bottom: 6px; }
+  .big-prompt { font-size: clamp(1.6rem, 4.5vw, 3.2rem); font-weight: 800; text-align: center; margin: 20px 0; text-wrap: balance; }
+  .podium { display: flex; align-items: flex-end; justify-content: center; gap: 12px; margin: 30px 0 18px; min-height: 280px; }
+  .podest { width: min(30%, 220px); text-align: center; }
+  .podest .name { font-weight: 800; font-size: clamp(1rem, 2.6vw, 1.6rem); margin-bottom: 6px; word-break: break-word; }
+  .podest .block { border-radius: 14px 14px 0 0; color: #fff; display: flex; flex-direction: column; justify-content: flex-start; padding-top: 12px; font-weight: 800; }
+  .podest .block .place { font-size: 2.2rem; }
+  .podest .block .p { font-size: 1.1rem; }
+  .rest-list { max-width: 520px; margin: 0 auto; }
+
+  /* Modal / Toast */
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55); z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .modal { background: var(--card); border-radius: 18px; padding: 20px; width: min(480px, 100%); max-height: 90vh; overflow: auto; border: 1px solid var(--border); }
+  .modal h2 { margin-bottom: 10px; }
+  .modal .btn-row { margin-top: 16px; justify-content: flex-end; }
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--text); color: var(--bg);
+    padding: 10px 18px; border-radius: 12px; z-index: 60; font-weight: 600; max-width: calc(100% - 32px);
+  }
+  .privacy { font-size: 0.85rem; color: var(--muted); text-align: center; margin: 18px 8px 0; }
+  #appVersionLabel { text-align: center; margin-top: 14px; font-size: 0.68rem; color: var(--muted); opacity: 0.6; }
+  .continue { border-color: var(--accent); background: var(--accent-soft); }
+
+  #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 40; overflow: hidden; }
+  #confetti i { position: absolute; top: -20px; width: 10px; height: 16px; border-radius: 2px; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+  @media (prefers-reduced-motion: reduce) {
+    #confetti { display: none; }
+    .view.active, .score-chip.bump { animation: none; }
+  }
+
+  /* Kurzformate und Breakouts */
+  .big-timer .countdown { margin-top: 22px; }
+  .big-timer .cd-num { font-size: clamp(2.4rem, 7vw, 5rem); min-width: 170px; }
+  .big-timer .cd-bar { height: 18px; border-radius: 9px; }
+  .word-big { font-size: clamp(2.6rem, 9vw, 6.5rem); font-weight: 900; text-align: center; margin: 28px 0 8px; letter-spacing: -0.02em; word-break: break-word; line-height: 1.1; }
+  .assign-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 14px; }
+  .assign { border-radius: 14px; padding: 12px 14px; color: #fff; }
+  .assign b { display: block; font-size: 0.85rem; opacity: 0.9; }
+  .assign span { font-size: 1.15rem; font-weight: 700; }
+  .phase-steps { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 14px; }
+  .phase-step { padding: 6px 12px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); font-weight: 600; font-size: 0.9rem; }
+  .phase-step.on { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+  .phase-step.done { opacity: 0.55; text-decoration: line-through; }
+  .topic-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; }
+  .topic { text-align: left; border: 2px solid var(--border); background: var(--card); border-radius: 16px; padding: 14px; }
+  .topic.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
+  .topic .ic { font-size: 2rem; line-height: 1.2; }
+  .topic h3 { margin: 4px 0; font-size: 1.1rem; }
+  .topic p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+  .clues { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 8px; }
+  .clues li { background: var(--surface-2); border: 2px solid var(--border); border-radius: 12px; padding: 10px 14px; font-size: clamp(1.05rem, 2.4vw, 1.6rem); font-weight: 600; display: flex; gap: 12px; }
+  .clues li .n { color: var(--accent); font-weight: 800; flex: none; }
+  .clues li.new { border-color: var(--accent); animation: fadeIn 0.4s; }
+  .team-judge { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px; margin-top: 14px; }
+  .judge { display: flex; align-items: center; gap: 6px; border-radius: 12px; padding: 6px 6px 6px 12px; color: #fff; font-weight: 700; }
+  .judge .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .judge button { border: 0; border-radius: 10px; min-width: 46px; min-height: 42px; font-weight: 800; font-size: 1.1rem; background: rgba(255, 255, 255, 0.92); color: #0f172a; }
+  .judge.out { opacity: 0.35; }
+  .toggle-team:not(.on) { opacity: 0.5; }
+  .toggle-team.on { outline: 3px solid var(--text); outline-offset: 2px; }
+  .word-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
+  .word-list span { padding: 6px 12px; border-radius: 10px; background: var(--surface-2); font-weight: 600; }
+  .word-list .ok { background: var(--success-soft); color: var(--success); }
+  .word-list .skip { text-decoration: line-through; opacity: 0.6; }
+  .list-box { margin-top: 12px; padding: 12px 14px; border-radius: 12px; background: var(--surface-2); font-weight: 600; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  @media (max-width: 900px) { .grid4 { grid-template-columns: 1fr 1fr; } }
+
+  @media (max-width: 640px) {
+    .grid2 { grid-template-columns: 1fr; }
+    .opts { grid-template-columns: 1fr; }
+    .board { gap: 4px; }
+    .board-head { padding: 6px 2px; min-height: 52px; border-radius: 8px; }
+    .board-head .nm { font-size: 0.68rem; }
+    .cell { border-radius: 8px; }
+    .phase { grid-template-columns: 40px 1fr; }
+    .phase .ph-act { grid-column: 1 / -1; }
+    .big-timer .cd-num { min-width: 0; font-size: 2.4rem; }
+  }
+</style>
+</head>
+<body>
+<div id="lessonBar" class="lesson-bar" hidden></div>
+
+<main class="app">
+
+  <!-- Startseite -->
+  <section class="view" id="view-home">
+    <header class="hero">
+      <div>
+        <h1>🎲 Stellvertretung</h1>
+        <p class="muted">Lustig und lehrreich, ohne Vorbereitung. Ein Gerät am Beamer genügt.</p>
+      </div>
+      <button class="icon-btn" data-act="settings" aria-label="Einstellungen">⚙️</button>
+    </header>
+
+    <div id="continueBox"></div>
+
+    <div class="card">
+      <h2>1 · Stufe</h2>
+      <div class="chips" id="stufeChips"></div>
+      <p class="hint">Bestimmt, wie schwierig die Fragen sind.</p>
+    </div>
+
+    <div class="card">
+      <h2>2 · Teams</h2>
+      <div id="teamEditor"></div>
+    </div>
+
+    <div class="card">
+      <h2>3 · Los geht's</h2>
+      <button class="btn btn-big btn-primary" data-act="openPlan">🧭 Lektion planen<small>Fertiger Ablauf für 30, 45 oder 90 Minuten</small></button>
+      <div class="grid2">
+        <button class="btn btn-big" data-act="openQuizSetup">🎯 Teamquiz<small>Kategorien und Punkte</small></button>
+        <button class="btn btn-big" data-act="openEstSetup">📏 Schätzduell<small>Wer liegt am nächsten?</small></button>
+      </div>
+      <span class="field-label">Kurzformate &amp; Kreatives</span>
+      <div class="grid4">
+        <button class="btn btn-big" data-act="openBoSetup">🧩 Breakout<small>Teams mit eigenem Auftrag</small></button>
+        <button class="btn btn-big" data-act="openWordsSetup">🗣️ Begriffe raten<small>Erklären oder Pantomime</small></button>
+        <button class="btn btn-big" data-act="openWhoSetup">🕵️ Wer bin ich?<small>Hinweis um Hinweis</small></button>
+        <button class="btn btn-big" data-act="openLogicSetup">🧠 Logikrätsel<small>Knobeln im Team</small></button>
+      </div>
+      <button class="btn btn-outline" style="width:100%;margin-top:10px" data-act="openPodium">🏆 Rangliste</button>
+    </div>
+
+    <p class="privacy">🔒 Die App speichert nur Teamnamen und Punkte auf diesem Gerät, keine Namen von Schülerinnen und Schülern. Sie funktioniert auch offline.</p>
+    <div id="appVersionLabel">v2026-10-15.2</div>
+  </section>
+
+  <!-- Lektions-Assistent -->
+  <section class="view" id="view-plan">
+    <div class="topbar">
+      <button class="btn btn-ghost" data-act="home">← Start</button>
+      <h1>🧭 Lektion planen</h1>
+    </div>
+    <div class="card">
+      <span class="field-label">Programm</span>
+      <div class="chips" id="planType"></div>
+      <span class="field-label">Dauer</span>
+      <div class="chips" id="planDur"></div>
+      <span class="field-label">Schwerpunkt</span>
+      <div class="chips" id="planFocus"></div>
+      <p class="hint" id="planTeamsHint"></p>
+    </div>
+    <div class="plan-summary" id="planSummary"></div>
+    <div id="planPhases"></div>
+    <div class="btn-row" id="planActions"></div>
+  </section>
+
+  <!-- Teams zeigen -->
+  <section class="view" id="view-teams">
+    <div class="topbar">
+      <button class="btn btn-ghost" data-act="back">← Zurück</button>
+      <h1>👋 Unsere Teams</h1>
+    </div>
+    <div class="team-wall" id="teamWall"></div>
+    <div class="card" style="margin-top:16px">
+      <h2>So spielen wir</h2>
+      <ul class="rules">
+        <li>Im Team wird <b>geflüstert</b>, damit die anderen nichts hören.</li>
+        <li>Pro Frage antwortet <b>eine Person</b>. Wer das ist, wechselt jedes Mal.</li>
+        <li>Die Lehrperson entscheidet, ob eine Antwort zählt.</li>
+        <li>Fair bleiben: Kein Handy, kein Nachschauen.</li>
+      </ul>
+    </div>
+    <div class="btn-row" id="teamsActions"></div>
+  </section>
+
+  <!-- Quiz einrichten -->
+  <section class="view" id="view-quizSetup">
+    <div class="topbar">
+      <button class="btn btn-ghost" data-act="back">← Zurück</button>
+      <h1>🎯 Teamquiz einrichten</h1>
+    </div>
+    <div class="card">
+      <span class="field-label">Schwerpunkt</span>
+      <div class="chips" id="qsFocus"></div>
+      <span class="field-label">Kategorien (Spalten) <span class="muted small" id="qsCatCount"></span></span>
+      <div class="chips" id="qsCats"></div>
+      <p class="hint">2 bis 6 Kategorien wählen. <button class="btn btn-ghost small" style="min-height:0;padding:2px 6px" data-act="qsShuffle">🎲 neu mischen</button></p>
+      <span class="field-label">Fragen pro Kategorie</span>
+      <div class="chips" id="qsRows"></div>
+      <span class="field-label">Wer antwortet?</span>
+      <div class="chips" id="qsMode"></div>
+      <p class="hint" id="qsModeHint"></p>
+      <span class="field-label">Zeit pro Frage</span>
+      <div class="chips" id="qsTimer"></div>
+    </div>
+    <button class="btn btn-primary btn-big" data-act="quizCreate">Spielfeld erstellen</button>
+  </section>
+
+  <!-- Spielfeld -->
+  <section class="view" id="view-board">
+    <div class="topbar">
+      <button class="btn btn-ghost" data-act="home">← Start</button>
+      <h2>🎯 Teamquiz</h2>
+      <button class="icon-btn" data-act="fullscreen" aria-label="Vollbild" data-fs>⛶</button>
+      <button class="btn btn-outline" data-act="quizEnd">🏁 Beenden</button>
+    </div>
+    <div class="scorebar" data-scorebar></div>
+    <div id="turnBanner"></div>
+    <div class="board" id="board"></div>
+    <div id="boardDone"></div>
+  </section>
+
+  <!-- Frage -->
+  <section class="view" id="view-question">
+    <div class="topbar">
+      <button class="btn btn-ghost" data-act="toBoard">← Spielfeld</button>
+      <div class="q-head" id="qHead" style="flex:1;margin:0"></div>
+      <button class="icon-btn" data-act="fullscreen" aria-label="Vollbild" data-fs>⛶</button>
+    </div>
+    <div class="scorebar" data-scorebar></div>
+    <div class="q-card">
+      <p class="q-text" id="qText"></p>
+      <div class="opts" id="qOpts"></div>
+      <div id="qCountdownWrap"></div>
+      <div id="qAnswer"></div>
+      <div class="q-controls" id="qControls"></div>
+    </div>
+  </section>
+
+  <!-- Schätzduell einrichten -->
+  <section class="view" id="view-estSetup">
+    <div class="topbar">
+      <button class="btn btn-ghost" data-act="back">← Zurück</button>
+      <h1>📏 Schätzduell einrichten</h1>
+    </div>
+    <div class="card">
+      <span class="field-label">Anzahl Fragen</span>
+      <div class="chips" id="esN"></div>
+      <span class="field-label">Zeit zum Schätzen</span>
+      <div class="chips" id="esTimer"></div>
+      <span class="field-label">Punkte</span>
+      <p class="hint" style="margin:0">Am nächsten dran: <b>300</b>, Zweite: <b>200</b>, Dritte: <b>100</b>. Volltreffer (höchstens 1 % daneben): <b>+100</b> Bonus.</p>
+      <p class="hint">Die Teams schreiben ihre Schätzung auf ein Blatt oder an die Wandtafel, die Lehrperson tippt sie ein.</p>
+    </div>
+    <button class="btn btn-primary btn-big" data-act="estCreate">Schätzduell starten</button>
+  </section>
+
+  <!-- Schätzduell -->
+  <section class="view" id="view-est">
+    <div class="topbar">
+      <button class="btn btn-ghost" data-act="home">← Start</button>
+      <h2 id="estTitle">📏 Schätzduell</h2>
+      <button class="icon-btn" data-act="fullscreen" aria-label="Vollbild" data-fs>⛶</button>
+    </div>
+    <div class="scorebar" data-scorebar></div>
+    <div class="q-card" id="estCard"></div>
+  </section>
+
+  <!-- Bewegungspause -->
+  <section class="view" id="view-pause">
+    <div class="topbar">
+      <button class="btn btn-ghost" data-act="back">← Zurück</button>
+      <h1>🤸 Bewegungspause</h1>
+    </div>
+    <div class="q-card">
+      <p class="muted" style="text-align:center;font-size:1.1rem;margin:0">Fenster auf, alle stehen hinter ihrem Stuhl.<br>Wer bei der Aussage dazugehört, <b>wechselt den Platz</b>.</p>
+      <p class="big-prompt" id="pausePrompt"></p>
+      <div class="btn-row" style="justify-content:center">
+        <button class="btn btn-primary" data-act="pauseNext">Nächste Aussage ▸</button>
+      </div>
+      <div id="pauseCountdownWrap"></div>
+    </div>
+  </section>
+
+  <!-- Breakout einrichten -->
+  <section class="view" id="view-boSetup">
+    <div class="topbar">
+      <button class="btn btn-ghost" data-act="back">← Zurück</button>
+      <h1>🧩 Themen-Breakout</h1>
+    </div>
+    <div class="card">
+      <span class="field-label">Thema</span>
+      <div class="topic-grid" id="boTopics"></div>
+      <span class="field-label">Dauer</span>
+      <div class="chips" id="boDur"></div>
+      <p class="hint" id="boDurHint"></p>
+      <p class="hint">Jedes Team bekommt eine eigene Variante des Auftrags. Papier und Stifte bereitlegen.</p>
+    </div>
+    <button class="btn btn-primary btn-big" data-act="boCreate">Breakout starten</button>
+  </section>
+
+  <!-- Breakout -->
+  <section class="view" id="view-breakout">
+    <div class="topbar">
+      <button class="btn btn-ghost" data-act="home">← Start</button>
+      <h2 id="boTitle">🧩 Breakout</h2>
+      <button class="icon-btn" data-act="fullscreen" aria-label="Vollbild" data-fs>⛶</button>
+    </div>
+    <div id="boBody"></div>
+  </section>
+
+  <!-- Begriffe raten einrichten -->
+  <section class="view" id="view-wordsSetup">
+    <div class="topbar">
+      <button class="btn btn-ghost" data-act="back">← Zurück</button>
+      <h1>🗣️ Begriffe raten</h1>
+    </div>
+    <div class="card">
+      <p style="margin-top:0">Eine Person pro Team steht mit dem <b>Rücken zur Leinwand</b>. Das eigene Team sieht den Begriff und erklärt ihn oder spielt ihn vor.</p>
+      <span class="field-label">Art</span>
+      <div class="chips" id="wsMode"></div>
+      <span class="field-label">Zeit pro Runde</span>
+      <div class="chips" id="wsSec"></div>
+      <span class="field-label">Runden</span>
+      <div class="chips" id="wsRounds"></div>
+    </div>
+    <button class="btn btn-primary btn-big" data-act="wordsCreate">Los geht's</button>
+  </section>
+
+  <!-- Begriffe raten -->
+  <section class="view" id="view-words">
+    <div class="topbar">
+      <button class="btn btn-ghost" data-act="home">← Start</button>
+      <h2 id="wordsTitle">🗣️ Begriffe raten</h2>
+      <button class="icon-btn" data-act="fullscreen" aria-label="Vollbild" data-fs>⛶</button>
+    </div>
+    <div class="scorebar" data-scorebar></div>
+    <div class="q-card" id="wordsCard"></div>
+  </section>
+
+  <!-- Wer bin ich? einrichten -->
+  <section class="view" id="view-whoSetup">
+    <div class="topbar">
+      <button class="btn btn-ghost" data-act="back">← Zurück</button>
+      <h1>🕵️ Wer bin ich?</h1>
+    </div>
+    <div class="card">
+      <p style="margin-top:0">Gesucht ist ein Tier, ein Ort, eine Person, eine Figur oder ein Gegenstand. Die Hinweise werden immer einfacher: Wer nach dem 1. Hinweis richtig rät, bekommt <b>500</b> Punkte, nach dem 5. nur noch <b>100</b>.</p>
+      <span class="field-label">Anzahl Rätsel</span>
+      <div class="chips" id="whoN"></div>
+    </div>
+    <button class="btn btn-primary btn-big" data-act="whoCreate">Los geht's</button>
+  </section>
+
+  <!-- Wer bin ich? -->
+  <section class="view" id="view-who">
+    <div class="topbar">
+      <button class="btn btn-ghost" data-act="home">← Start</button>
+      <h2 id="whoTitle">🕵️ Wer bin ich?</h2>
+      <button class="icon-btn" data-act="fullscreen" aria-label="Vollbild" data-fs>⛶</button>
+    </div>
+    <div class="scorebar" data-scorebar></div>
+    <div class="q-card" id="whoCard"></div>
+  </section>
+
+  <!-- Logikrätsel einrichten -->
+  <section class="view" id="view-logicSetup">
+    <div class="topbar">
+      <button class="btn btn-ghost" data-act="back">← Zurück</button>
+      <h1>🧠 Logikrätsel</h1>
+    </div>
+    <div class="card">
+      <p style="margin-top:0">Alle Teams lösen gleichzeitig auf Papier. Danach folgt die Auflösung mit Erklärung. Schwierigere Rätsel geben mehr Punkte.</p>
+      <span class="field-label">Anzahl Rätsel</span>
+      <div class="chips" id="lgN"></div>
+      <span class="field-label">Zeit pro Rätsel</span>
+      <div class="chips" id="lgTimer"></div>
+    </div>
+    <button class="btn btn-primary btn-big" data-act="logicCreate">Los geht's</button>
+  </section>
+
+  <!-- Logikrätsel -->
+  <section class="view" id="view-logic">
+    <div class="topbar">
+      <button class="btn btn-ghost" data-act="home">← Start</button>
+      <h2 id="logicTitle">🧠 Logikrätsel</h2>
+      <button class="icon-btn" data-act="fullscreen" aria-label="Vollbild" data-fs>⛶</button>
+    </div>
+    <div class="scorebar" data-scorebar></div>
+    <div class="q-card" id="logicCard"></div>
+  </section>
+
+  <!-- Siegerehrung -->
+  <section class="view" id="view-podium">
+    <div class="topbar">
+      <button class="btn btn-ghost" data-act="back">← Zurück</button>
+      <h1>🏆 Rangliste</h1>
+    </div>
+    <div class="podium" id="podium"></div>
+    <div class="rest-list" id="restList"></div>
+    <div class="btn-row" style="justify-content:center;margin-top:20px" id="podiumActions"></div>
+  </section>
+</main>
+
+<!-- ausserhalb von <main>: die Einblende-Animation (transform) würde position:fixed sonst verschieben -->
+<div class="buzzers" id="buzzers" hidden></div>
+<div id="modal" class="modal-backdrop" hidden><div class="modal" role="dialog" aria-modal="true" id="modalBox"></div></div>
+<div id="confetti"></div>
+
+<script>
+"use strict";
+
+/* =====================================================================
+   Hilfsfunktionen
+   ===================================================================== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const round6 = (x) => Math.round(x * 1e6) / 1e6;
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+const NF = new Intl.NumberFormat("de-CH", { maximumFractionDigits: 3 });
+const fmt = (n) => NF.format(n);
+const fmtYear = (n) => String(Math.round(n));
+function fmtClock(sec) {
+  const s = Math.max(0, Math.round(sec));
+  return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+}
+// Akzeptiert 41'285 / 41 285 / 9,58 / 9.58
+function parseNum(raw) {
+  if (raw == null) return null;
+  const s = String(raw).trim().replace(/['’\s]/g, "").replace(",", ".");
+  if (s === "") return null; // Number("") wäre 0 (STOLPERSTEINE)
+  const n = Number(s);
+  return Number.isFinite(n) ? n : null;
+}
+
+/* =====================================================================
+   Inhalte: Kategorien und Fragenbanken
+   Format Fragen: [Schwierigkeit 1–5, Frage, Antwort, (Falschantworten für Multiple Choice)]
+   ===================================================================== */
+const FOCI = [
+  { id: "mix", name: "🎲 Gemischt" },
+  { id: "aw", name: "🌍 Allgemeinwissen" },
+  { id: "mathe", name: "🧮 Mathe & Logik" },
+  { id: "deutsch", name: "📚 Deutsch" },
+];
+
+const CATS = [
+  { id: "schweiz", name: "Schweiz", icon: "🇨🇭", focus: "aw" },
+  { id: "welt", name: "Welt & Geografie", icon: "🌍", focus: "aw" },
+  { id: "natur", name: "Natur & Körper", icon: "🔬", focus: "aw" },
+  { id: "geschichte", name: "Geschichte", icon: "🏛️", focus: "aw" },
+  { id: "kultur", name: "Sport & Kultur", icon: "🎭", focus: "aw" },
+  { id: "kopf", name: "Kopfrechnen", icon: "🧮", focus: "mathe", gen: genKopf },
+  { id: "folgen", name: "Zahlenfolgen", icon: "🔢", focus: "mathe", gen: genFolge },
+  { id: "einheiten", name: "Masse & Einheiten", icon: "📐", focus: "mathe", gen: genEinheit },
+  { id: "knobeln", name: "Knobeln", icon: "🧩", focus: "mathe" },
+  { id: "redewendungen", name: "Redewendungen", icon: "💬", focus: "deutsch" },
+  { id: "rechtschreibung", name: "Rechtschreibung", icon: "✏️", focus: "deutsch" },
+  { id: "woerter", name: "Gegenteil & Synonym", icon: "↔️", focus: "deutsch" },
+  { id: "grammatik", name: "Grammatik", icon: "🔤", focus: "deutsch" },
+  { id: "fremdwoerter", name: "Fremdwörter", icon: "🗣️", focus: "deutsch" },
+];
+const CAT_BY_ID = Object.fromEntries(CATS.map((c) => [c.id, c]));
+
+const BANK = {
+  schweiz: [
+    [1, "Wie viele Kantone hat die Schweiz?", "26"],
+    [1, "Wie viele Mitglieder hat der Bundesrat?", "7"],
+    [1, "In welcher Stadt haben Bundesrat und Parlament ihren Sitz?", "Bern"],
+    [1, "Welches Tier ist im Wappen des Kantons Bern?", "Ein Bär"],
+    [1, "Wie heisst der Held der Sage, der mit der Armbrust einen Apfel vom Kopf seines Sohnes schoss?", "Wilhelm Tell"],
+    [2, "Welche vier Landessprachen hat die Schweiz?", "Deutsch, Französisch, Italienisch und Rätoromanisch"],
+    [2, "Welcher Kanton ist flächenmässig der grösste?", "Graubünden", ["Bern", "Wallis", "Tessin"]],
+    [2, "Wie heisst der Hauptort des Kantons Basel-Landschaft?", "Liestal"],
+    [2, "Mit wie vielen Ländern hat die Schweiz eine gemeinsame Grenze?", "5 (Deutschland, Frankreich, Italien, Österreich, Liechtenstein)"],
+    [2, "Wie heisst der rund 57 km lange Eisenbahntunnel, der 2016 eröffnet wurde?", "Gotthard-Basistunnel"],
+    [2, "Welche Jahreszahl trägt der Bundesbrief, der als Gründungsdokument der Eidgenossenschaft gilt?", "1291"],
+    [2, "Wie heisst der Hauptort des Kantons Graubünden?", "Chur"],
+    [3, "Wie heisst der höchste Berg der Schweiz?", "Dufourspitze", ["Matterhorn", "Eiger", "Jungfrau"]],
+    [3, "Welcher Kanton ist flächenmässig der kleinste?", "Basel-Stadt", ["Zug", "Genf", "Appenzell Innerrhoden"]],
+    [3, "Seit welchem Jahr dürfen Frauen in der Schweiz auf Bundesebene abstimmen und wählen?", "1971", ["1919", "1945", "1990"]],
+    [3, "In welcher Schweizer Stadt hat der Weltfussballverband FIFA seinen Sitz?", "Zürich"],
+    [3, "In welcher Stadt wurde 1863 das Rote Kreuz gegründet?", "Genf"],
+    [3, "Wie heisst der Hauptort des Kantons Tessin?", "Bellinzona", ["Lugano", "Locarno", "Ascona"]],
+    [4, "Welches ist der grösste See, der ganz in der Schweiz liegt?", "Neuenburgersee", ["Vierwaldstättersee", "Zürichsee", "Thunersee"]],
+    [4, "Welches ist der jüngste Kanton der Schweiz?", "Jura (seit 1979)"],
+    [4, "In welcher Stadt hat das Internationale Olympische Komitee (IOK) seinen Sitz?", "Lausanne"],
+    [4, "Wie heisst der Hauptort des Kantons Wallis?", "Sitten (Sion)"],
+    [4, "In welchem Jahr wurde der moderne Schweizer Bundesstaat gegründet?", "1848", ["1291", "1798", "1918"]],
+    [5, "Wie heisst der Hauptort des Kantons Appenzell Ausserrhoden?", "Herisau", ["Appenzell", "Urnäsch", "Teufen"]],
+    [5, "Wer wurde 1984 als erste Frau in den Bundesrat gewählt?", "Elisabeth Kopp"],
+    [5, "In welcher Schlacht besiegten die Eidgenossen 1315 ein habsburgisches Heer?", "Morgarten", ["Sempach", "Marignano", "Murten"]],
+    [5, "Wie heisst der Hauptort des Kantons Jura?", "Delsberg (Delémont)"],
+  ],
+  welt: [
+    [1, "Wie heisst der grösste Ozean der Erde?", "Pazifik (Pazifischer Ozean)"],
+    [1, "Welches Land hat die Form eines Stiefels?", "Italien"],
+    [1, "Welches ist flächenmässig das grösste Land der Welt?", "Russland"],
+    [1, "Wie heisst die Hauptstadt von Spanien?", "Madrid"],
+    [1, "Wie heisst der höchste Berg der Welt?", "Mount Everest"],
+    [2, "Wie heisst die Hauptstadt der Türkei?", "Ankara", ["Istanbul", "Izmir", "Antalya"]],
+    [2, "Wie heisst die grösste heisse Wüste der Erde?", "Sahara"],
+    [2, "Welches ist der kleinste Staat der Welt?", "Vatikanstadt"],
+    [2, "Welcher Ozean liegt zwischen Afrika und Australien?", "Indischer Ozean"],
+    [2, "Welcher Fluss gilt meistens als längster der Welt?", "Nil (knapp vor dem Amazonas, je nach Messung)"],
+    [3, "Wie heisst die Hauptstadt von Australien?", "Canberra", ["Sydney", "Melbourne", "Perth"]],
+    [3, "Wie heisst die Hauptstadt von Kanada?", "Ottawa", ["Toronto", "Montreal", "Vancouver"]],
+    [3, "Auf welchem Kontinent gibt es am meisten Länder?", "Afrika"],
+    [3, "Welcher Fluss fliesst durch Wien, Budapest und Belgrad?", "Donau"],
+    [3, "Welches Land hat seit 2023 am meisten Einwohnerinnen und Einwohner?", "Indien", ["China", "USA", "Indonesien"]],
+    [3, "Welches ist die grösste Insel der Welt?", "Grönland"],
+    [4, "In welchem Land liegt die Inkastadt Machu Picchu?", "Peru", ["Mexiko", "Chile", "Bolivien"]],
+    [4, "Wie heisst die Hauptstadt von Brasilien?", "Brasília", ["Rio de Janeiro", "São Paulo", "Salvador"]],
+    [4, "Welche Millionenstadt liegt auf zwei Kontinenten?", "Istanbul"],
+    [5, "Wie heisst der tiefste See der Erde?", "Baikalsee"],
+    [5, "In welchem Land steht die Tempelanlage Angkor Wat?", "Kambodscha", ["Thailand", "Vietnam", "Indien"]],
+    [5, "Welche Meerenge trennt Europa von Afrika?", "Strasse von Gibraltar"],
+  ],
+  natur: [
+    [1, "Wie viele Beine hat eine Spinne?", "8"],
+    [1, "Ist der Wal ein Fisch oder ein Säugetier?", "Ein Säugetier"],
+    [1, "Welches ist das schnellste Landtier?", "Gepard"],
+    [1, "Welcher Planet wird «der rote Planet» genannt?", "Mars"],
+    [1, "Wie viele Planeten hat unser Sonnensystem?", "8"],
+    [2, "Welches ist das grösste Organ des Menschen?", "Die Haut", ["Die Leber", "Die Lunge", "Das Gehirn"]],
+    [2, "Welcher Planet ist der grösste in unserem Sonnensystem?", "Jupiter"],
+    [2, "Welcher Planet ist der Sonne am nächsten?", "Merkur"],
+    [2, "Welches Gas nehmen Pflanzen bei der Fotosynthese aus der Luft auf?", "Kohlendioxid (CO₂)", ["Sauerstoff", "Stickstoff", "Helium"]],
+    [2, "Was ist schneller: Schall oder Licht?", "Licht"],
+    [3, "Welches chemische Symbol hat Gold?", "Au", ["Go", "Gd", "Ag"]],
+    [3, "Welches ist der längste Knochen im menschlichen Körper?", "Der Oberschenkelknochen"],
+    [3, "Welcher natürliche Stoff ist der härteste?", "Diamant"],
+    [3, "In welchem Teil der Zelle liegt der grösste Teil der Erbinformation (DNA)?", "Im Zellkern"],
+    [3, "Welches chemische Element hat die Ordnungszahl 1?", "Wasserstoff"],
+    [4, "Welches Organ bildet das Hormon Insulin?", "Die Bauchspeicheldrüse", ["Die Leber", "Die Niere", "Die Schilddrüse"]],
+    [4, "Wie viele Chromosomen hat ein Mensch normalerweise in einer Körperzelle?", "46", ["23", "44", "48"]],
+    [4, "Welches Vitamin kann die Haut mithilfe von Sonnenlicht selbst bilden?", "Vitamin D"],
+    [4, "Wie heisst die Wissenschaft vom Wetter?", "Meteorologie"],
+    [4, "In welcher Einheit misst man die Frequenz, zum Beispiel eines Tons?", "Hertz (Hz)"],
+    [5, "Welches Metall ist bei Zimmertemperatur flüssig?", "Quecksilber"],
+    [5, "Welches chemische Symbol hat Eisen?", "Fe"],
+    [5, "Wie nennt man Tiere, deren Körpertemperatur sich der Umgebung anpasst, zum Beispiel Eidechsen?", "Wechselwarme Tiere"],
+  ],
+  geschichte: [
+    [1, "Wie hiess das «unsinkbare» Schiff, das 1912 nach dem Zusammenstoss mit einem Eisberg sank?", "Titanic"],
+    [1, "Wer betrat 1969 als erster Mensch den Mond?", "Neil Armstrong"],
+    [1, "Welches Volk baute die Pyramiden von Gizeh?", "Die alten Ägypter"],
+    [1, "In welcher Stadt steht das Kolosseum?", "Rom"],
+    [2, "In welchem Jahr endete der Zweite Weltkrieg in Europa?", "1945"],
+    [2, "Wer war der erste Präsident der USA?", "George Washington", ["Abraham Lincoln", "Thomas Jefferson", "Benjamin Franklin"]],
+    [2, "Welcher berühmte Physiker arbeitete an der Relativitätstheorie, während er in Bern lebte?", "Albert Einstein"],
+    [2, "In welchem Jahr landeten zum ersten Mal Menschen auf dem Mond?", "1969"],
+    [3, "In welchem Jahr fiel die Berliner Mauer?", "1989", ["1961", "1979", "1991"]],
+    [3, "Wer erfand um 1450 den Buchdruck mit beweglichen Buchstaben?", "Johannes Gutenberg"],
+    [3, "In welchem Jahr erreichte Kolumbus Amerika?", "1492"],
+    [3, "In welchem Jahr begann der Erste Weltkrieg?", "1914"],
+    [3, "Welcher französische Kaiser verlor 1815 die Schlacht bei Waterloo?", "Napoleon (Bonaparte)"],
+    [4, "Welcher Feldherr aus Karthago überquerte mit Elefanten die Alpen?", "Hannibal"],
+    [4, "Wer schrieb das Theaterstück «Wilhelm Tell» (1804)?", "Friedrich Schiller", ["Johann Wolfgang von Goethe", "Gottfried Keller", "Friedrich Dürrenmatt"]],
+    [4, "In welchem Jahr begann die Französische Revolution?", "1789"],
+    [4, "Wie nennt man die Seefahrer aus Skandinavien, die um das Jahr 1000 bis nach Nordamerika segelten?", "Wikinger"],
+    [5, "Welche Stadt wurde im Jahr 79 n. Chr. beim Ausbruch des Vesuvs verschüttet?", "Pompeji"],
+    [5, "Welche Forscherin erhielt als erste Frau einen Nobelpreis und später sogar einen zweiten?", "Marie Curie"],
+    [5, "Welcher Frankenkönig wurde im Jahr 800 zum Kaiser gekrönt?", "Karl der Grosse"],
+  ],
+  kultur: [
+    [1, "Wie viele Spielerinnen oder Spieler pro Team stehen beim Fussball auf dem Feld?", "11"],
+    [1, "Wie viele Ringe hat die olympische Flagge?", "5"],
+    [1, "In welcher Sportart wurde Roger Federer berühmt?", "Tennis"],
+    [1, "Wie oft findet die Fussball-Weltmeisterschaft der Männer statt?", "Alle 4 Jahre"],
+    [2, "Wer malte die «Mona Lisa»?", "Leonardo da Vinci"],
+    [2, "Wie heisst die traditionelle Schweizer Kampfsportart im Sägemehl?", "Schwingen"],
+    [2, "Wie heisst die Schachfigur, die über andere Figuren springen kann?", "Springer (Pferd)"],
+    [2, "Wie viele Saiten hat eine normale Gitarre?", "6"],
+    [2, "In welcher Stadt fanden 2024 die Olympischen Sommerspiele statt?", "Paris"],
+    [3, "Wer komponierte die Oper «Die Zauberflöte»?", "Wolfgang Amadeus Mozart", ["Ludwig van Beethoven", "Johann Sebastian Bach", "Joseph Haydn"]],
+    [3, "Wie viele Spielerinnen oder Spieler pro Team sind beim Eishockey gleichzeitig auf dem Eis (mit Goalie)?", "6"],
+    [3, "Welcher Maler schnitt sich einen Teil seines Ohrs ab?", "Vincent van Gogh"],
+    [3, "Wie viele Tasten hat ein normales Klavier?", "88", ["66", "76", "100"]],
+    [4, "Wer schrieb das Buch «Heidi»?", "Johanna Spyri"],
+    [4, "Wie viele Wimbledon-Titel im Einzel gewann Roger Federer?", "8", ["5", "7", "10"]],
+    [4, "Welcher Schweizer Tennisspieler gewann 2014, 2015 und 2016 je ein Grand-Slam-Turnier?", "Stan Wawrinka"],
+    [5, "Wie viele Punkte gibt ein Touchdown im American Football?", "6"],
+    [5, "Welcher Schweizer Künstler schuf lange, dünne Bronzefiguren wie «L'Homme qui marche»?", "Alberto Giacometti"],
+    [5, "Aus welchem Land stammt die Papierfaltkunst Origami?", "Japan"],
+  ],
+  knobeln: [
+    [1, "Wie viele Monate haben 28 Tage?", "Alle 12"],
+    [1, "Ein Bauer hat 17 Schafe. Alle bis auf 9 laufen weg. Wie viele bleiben?", "9"],
+    [1, "Du überholst bei einem Rennen die Person auf Platz 2. Auf welchem Platz bist du jetzt?", "Auf Platz 2"],
+    [1, "Was ist schwerer: 1 kg Federn oder 1 kg Eisen?", "Beide sind gleich schwer"],
+    [2, "Mias Vater hat fünf Töchter: Lala, Lele, Lili und Lolo. Wie heisst die fünfte?", "Mia"],
+    [2, "Ich denke mir eine Zahl, verdopple sie und zähle 4 dazu. Das Ergebnis ist 20. Welche Zahl habe ich mir gedacht?", "8"],
+    [2, "In jeder Ecke eines quadratischen Zimmers sitzt eine Katze. Jede Katze sieht drei andere Katzen. Wie viele Katzen sind im Zimmer?", "4"],
+    [2, "Wie oft kann man 10 von 100 abziehen?", "Einmal, danach zieht man von 90 ab"],
+    [3, "Ein Schläger und ein Ball kosten zusammen Fr. 1.10. Der Schläger kostet Fr. 1.00 mehr als der Ball. Wie viel kostet der Ball?", "5 Rappen"],
+    [3, "5 Maschinen brauchen 5 Minuten für 5 Teile. Wie lange brauchen 100 Maschinen für 100 Teile?", "5 Minuten"],
+    [3, "Seerosen verdoppeln jeden Tag ihre Fläche. Nach 48 Tagen ist der See ganz bedeckt. Nach wie vielen Tagen war er halb bedeckt?", "Nach 47 Tagen"],
+    [3, "Ein Brett wird in 4 Stücke gesägt. Jeder Schnitt dauert 3 Minuten. Wie lange dauert das Ganze?", "9 Minuten (3 Schnitte)"],
+    [4, "Eine Schnecke sitzt am Boden eines 10 m tiefen Brunnens. Tagsüber klettert sie 3 m hoch, nachts rutscht sie 2 m zurück. An welchem Tag erreicht sie den Rand?", "Am 8. Tag"],
+    [4, "Ein Zaun ist 20 m lang. Alle 2 m steht ein Pfosten, auch an beiden Enden. Wie viele Pfosten sind es?", "11"],
+    [4, "6 Personen geben sich gegenseitig je einmal die Hand. Wie viele Händedrücke gibt es?", "15"],
+    [4, "Zwei Väter und zwei Söhne fangen je einen Fisch. Zusammen sind es aber nur 3 Fische. Wie ist das möglich?", "Es sind nur 3 Personen: Grossvater, Vater und Sohn"],
+    [5, "Eine Uhr schlägt um 6 Uhr sechsmal, das dauert 5 Sekunden. Wie lange dauert es um 12 Uhr?", "11 Sekunden (11 Pausen à 1 Sekunde)"],
+    [5, "Wie viele Quadrate (aller Grössen) findest du in einem 3×3-Gitter?", "14 (9 + 4 + 1)"],
+    [5, "Wie geht es weiter? 1, 11, 21, 1211, 111221, …", "312211 (jede Zahl «liest» die vorherige vor: drei 1, zwei 2, eine 1)"],
+    [5, "Drei Kisten sind alle falsch beschriftet: «Äpfel», «Birnen» und «Gemischt». Aus welcher Kiste musst du nur eine Frucht ziehen, um alle richtig zu beschriften?", "Aus der Kiste «Gemischt»"],
+  ],
+  redewendungen: [
+    [1, "Ergänze: «Ich drücke dir die …»", "Daumen"],
+    [1, "Ergänze: «Den Nagel auf den … treffen»", "Kopf"],
+    [1, "Ergänze: «Ich verstehe nur …»", "Bahnhof"],
+    [2, "Ergänze: «Da liegt der … begraben.»", "Hund"],
+    [2, "Was bedeutet «jemandem einen Bären aufbinden»?", "Jemandem etwas Unwahres erzählen", ["Jemanden erschrecken", "Jemandem helfen", "Jemanden festhalten"]],
+    [2, "Ergänze: «Sich wie ein … im Porzellanladen benehmen»", "Elefant"],
+    [2, "Ergänze: «Etwas auf die lange … schieben»", "Bank"],
+    [2, "Was bedeutet «Tomaten auf den Augen haben»?", "Etwas Offensichtliches nicht sehen", ["Sehr müde sein", "Sich schämen", "Weinen"]],
+    [3, "Ergänze: «Mit jemandem ein … zu rupfen haben»", "Hühnchen"],
+    [3, "Ergänze: «Die … im Sack kaufen»", "Katze"],
+    [3, "Was bedeutet «auf dem Schlauch stehen»?", "Etwas gerade nicht verstehen", ["Im Garten arbeiten", "Sehr wütend sein", "Zu spät kommen"]],
+    [3, "Ergänze: «Etwas durch die … sagen»", "Blume"],
+    [4, "Ergänze: «Jemandem reinen … einschenken»", "Wein"],
+    [4, "Was bedeutet «die Flinte ins Korn werfen»?", "Zu früh aufgeben", ["Auf die Jagd gehen", "Ein Feld ernten", "Wütend werden"]],
+    [4, "Ergänze: «Dastehen wie der Ochs vor dem …»", "Berg"],
+    [4, "Was bedeutet «jemandem den Kopf waschen»?", "Jemanden scharf zurechtweisen", ["Jemanden trösten", "Jemanden pflegen", "Jemanden überraschen"]],
+    [5, "Ergänze: «Perlen vor die … werfen»", "Säue"],
+    [5, "Ergänze: «Wissen, wo Barthel den … holt»", "Most"],
+    [5, "Was bedeutet «ein Brett vor dem Kopf haben»?", "Etwas Einfaches nicht begreifen", ["Kopfschmerzen haben", "Sich verletzt haben", "Sehr müde sein"]],
+  ],
+  rechtschreibung: [
+    [1, "Welche Schreibweise ist richtig?", "nämlich", ["nähmlich", "nämmlich", "nehmlich"]],
+    [1, "Welche Schreibweise ist richtig?", "Maschine", ["Maschiene", "Machine", "Maschinne"]],
+    [1, "Welches Wort fehlt? «Ich hoffe, … du kommst.»", "dass", ["das"]],
+    [1, "Welche Schreibweise ist richtig?", "Entschuldigung", ["Endschuldigung", "Entschuldiegung", "Entschultigung"]],
+    [2, "Welche Schreibweise ist richtig?", "Standard", ["Standart", "Standarth", "Stantard"]],
+    [2, "Welche Schreibweise ist richtig?", "Reparatur", ["Reperatur", "Repparatur", "Reparatuhr"]],
+    [2, "Welches Wort fehlt? «Ihr … heute zu spät.»", "seid", ["seit"]],
+    [2, "Welche Schreibweise ist richtig?", "Interesse", ["Interresse", "Interese", "Intresse"]],
+    [2, "Welche Schreibweise ist richtig?", "Paket", ["Packet", "Pakett", "Packett"]],
+    [3, "Welche Schreibweise ist richtig?", "endgültig", ["entgültig", "endgültich", "entgültich"]],
+    [3, "Welche Schreibweise ist richtig?", "Wiederholung", ["Widerholung", "Wiederhohlung", "Widerhohlung"]],
+    [3, "Welche Schreibweise ist richtig?", "Rhythmus", ["Rythmus", "Rhytmus", "Rhythmuss"]],
+    [3, "Welches Wort fehlt? «Das Fenster ist schon … offen.»", "wieder", ["wider"]],
+    [4, "Welche Schreibweise ist richtig?", "Karussell", ["Karussel", "Karrussell", "Karusell"]],
+    [4, "Welche Schreibweise ist richtig?", "Rückgrat", ["Rückgrad", "Rückrat", "Rückgrath"]],
+    [4, "Welche Schreibweise ist richtig?", "Satellit", ["Sattelit", "Satelit", "Sattellit"]],
+    [4, "Welche Schreibweise ist richtig?", "Gelatine", ["Gelantine", "Gelatiene", "Gellatine"]],
+    [5, "Welche Schreibweise ist richtig?", "Dilettant", ["Dilletant", "Dillettant", "Dilletand"]],
+    [5, "Welche Schreibweise ist richtig?", "Atmosphäre", ["Athmosphäre", "Atmossphäre", "Atmosphere"]],
+    [5, "Welche Schreibweise ist richtig?", "Quarantäne", ["Quarantene", "Karantäne", "Quarrantäne"]],
+  ],
+  woerter: [
+    [1, "Was ist das Gegenteil von «grosszügig»?", "geizig"],
+    [1, "Was ist das Gegenteil von «Ebbe»?", "Flut"],
+    [1, "Nenne ein anderes Wort für «beginnen».", "anfangen (starten)"],
+    [1, "Nenne ein anderes Wort für «rasch».", "schnell (flink, zügig)"],
+    [2, "Was ist das Gegenteil von «optimistisch»?", "pessimistisch"],
+    [2, "Was ist das Gegenteil von «sparsam»?", "verschwenderisch"],
+    [2, "Was ist das Gegenteil von «Import»?", "Export"],
+    [2, "Was ist das Gegenteil von «maximal»?", "minimal"],
+    [3, "Was ist das Gegenteil von «Theorie»?", "Praxis"],
+    [3, "Was ist das Gegenteil von «subjektiv»?", "objektiv"],
+    [3, "Was ist das Gegenteil von «Monolog»?", "Dialog"],
+    [3, "Nenne ein anderes Wort für «ignorieren».", "nicht beachten (übersehen, missachten)"],
+    [4, "Nenne ein anderes Wort für «kontrovers».", "umstritten"],
+    [4, "Was ist das Gegenteil von «konkav»?", "konvex"],
+    [4, "Wie nennt man ein Wort mit gegenteiliger Bedeutung, zum Beispiel heiss und kalt?", "Antonym (Gegenwort)"],
+    [4, "Wie nennt man ein Wort mit gleicher oder ähnlicher Bedeutung?", "Synonym"],
+    [5, "Nenne ein anderes Wort für «vage».", "ungenau (unbestimmt, unklar)"],
+    [5, "Nenne ein anderes Wort für «Lethargie».", "Trägheit (Teilnahmslosigkeit)"],
+    [5, "Was ist das Gegenteil von «abstrakt»?", "konkret"],
+  ],
+  grammatik: [
+    [1, "Welche Wortart ist «Haus»?", "Nomen", ["Verb", "Adjektiv", "Pronomen"]],
+    [1, "Welches Wort ist ein Pronomen?", "wir", ["Baum", "schön", "laufen"]],
+    [1, "Wie heisst die Vergangenheitsform (Präteritum) von «ich gehe»?", "ich ging"],
+    [2, "Wie viele Fälle (Kasus) gibt es im Deutschen?", "4 (Nominativ, Akkusativ, Dativ, Genitiv)"],
+    [2, "Welches Wort ist eine Präposition?", "unter", ["Tisch", "rot", "singen"]],
+    [2, "Wie heisst das Partizip II von «bringen»?", "gebracht"],
+    [2, "Wie heisst die Vergangenheitsform (Präteritum) von «ich schwimme»?", "ich schwamm"],
+    [3, "In welchem Fall steht «des Hundes»?", "Genitiv", ["Nominativ", "Dativ", "Akkusativ"]],
+    [3, "Wie heisst der Satzteil, der angibt, wer oder was etwas tut?", "Subjekt"],
+    [3, "Welche Steigerungsform ist «am schnellsten»?", "Superlativ", ["Positiv", "Komparativ", "Partizip"]],
+    [3, "Wie heisst der Konjunktiv II von «ich habe»?", "ich hätte"],
+    [3, "Wie heisst die Mehrzahl von «Kaktus»?", "Kakteen (auch: Kaktusse)"],
+    [4, "Welche Zeitform ist «ich war gegangen»?", "Plusquamperfekt", ["Perfekt", "Präteritum", "Futur II"]],
+    [4, "Wie heisst die Mehrzahl von «Atlas»?", "Atlanten (auch: Atlasse)"],
+    [4, "Welche Zeitform ist «sie wird kommen»?", "Futur I"],
+    [5, "Welche Zeitform ist «ich werde gegangen sein»?", "Futur II", ["Futur I", "Plusquamperfekt", "Perfekt"]],
+    [5, "Wie heisst die Mehrzahl von «Genus»?", "Genera"],
+    [5, "Welcher Fall folgt in der Standardsprache auf «wegen»?", "Genitiv (wegen des Wetters)"],
+  ],
+  fremdwoerter: [
+    [1, "Was bedeutet «anonym»?", "ohne Namen", ["sehr bekannt", "heimlich verliebt", "allein"]],
+    [1, "Was ist eine «Biografie»?", "eine Lebensbeschreibung", ["ein Erdkundebuch", "eine Tierart", "ein Fotoalbum"]],
+    [2, "Was ist eine «Prognose»?", "eine Vorhersage", ["ein Rückblick", "eine Krankheit", "eine Prüfung"]],
+    [2, "Was ist ein «Kompromiss»?", "eine Einigung, bei der alle etwas nachgeben", ["ein Streit ohne Ende", "ein Versprechen", "ein Missverständnis"]],
+    [2, "Was ist ein «Souvenir»?", "ein Andenken", ["ein Getränk", "ein Ausweis", "ein Spiel"]],
+    [3, "Was bedeutet «simultan»?", "gleichzeitig", ["nacheinander", "ähnlich", "einfach"]],
+    [3, "Was ist ein «Dilemma»?", "eine Zwickmühle zwischen zwei schlechten Möglichkeiten", ["ein Rätsel ohne Lösung", "ein Fehler im Text", "ein Wettbewerb"]],
+    [3, "Was bedeutet «temporär»?", "vorübergehend", ["dauerhaft", "pünktlich", "sehr schnell"]],
+    [3, "Was ist «Ironie»?", "das Gegenteil von dem sagen, was man meint", ["eine Lüge, um jemandem zu schaden", "eine sehr ernste Rede", "ein Reim am Zeilenende"]],
+    [4, "Was ist ein «Fiasko»?", "ein völliger Misserfolg", ["ein grosses Fest", "ein kleines Boot", "eine Geldstrafe"]],
+    [4, "Was bedeutet «Euphorie»?", "Hochstimmung, überschwängliche Freude", ["tiefe Traurigkeit", "grosse Angst", "Müdigkeit"]],
+    [4, "Was ist ein «Prolog»?", "eine Einleitung, ein Vorwort", ["ein Schlusswort", "ein Gespräch zu zweit", "ein Inhaltsverzeichnis"]],
+    [4, "Was bedeutet «Akustik»?", "die Lehre vom Schall", ["die Lehre vom Licht", "die Lehre von den Sternen", "die Lehre vom Wetter"]],
+    [5, "Was bedeutet «ambivalent»?", "zwiespältig", ["eindeutig", "gleichgültig", "beidhändig"]],
+    [5, "Was ist ein «Paradox»?", "eine scheinbar widersprüchliche Aussage", ["eine Lehrmeinung", "ein doppeltes Lob", "ein Beweis"]],
+    [5, "Was ist ein «Resümee»?", "eine Zusammenfassung", ["ein Einwand", "eine Bewerbung", "eine Rechnung"]],
+  ],
+};
+
+/* Schätzfragen: [Frage, Wert, Einheit, Erklärung, istJahreszahl] */
+const EST = [
+  ["Wie hoch ist die Dufourspitze, der höchste Berg der Schweiz?", 4634, "m", "Die Dufourspitze im Monte-Rosa-Massiv ist 4634 m hoch."],
+  ["Wie gross ist die Fläche der Schweiz?", 41285, "km²", "Die Schweiz ist rund 41'285 km² gross."],
+  ["Wie lang ist der Gotthard-Basistunnel?", 57, "km", "Mit rund 57 km ist er der längste Eisenbahntunnel der Welt."],
+  ["Wie gross ist die Fläche des Genfersees?", 580, "km²", "Rund 580 km². Etwa 60 % davon gehören zur Schweiz, der Rest zu Frankreich."],
+  ["Wie tief ist der Genfersee an der tiefsten Stelle?", 310, "m", "Rund 310 m tief."],
+  ["Wie hoch ist der Rheinfall bei Schaffhausen?", 23, "m", "23 m hoch und rund 150 m breit."],
+  ["Wie hoch ist das Matterhorn?", 4478, "m", "Das Matterhorn ist 4478 m hoch."],
+  ["Wie hoch ist der Säntis?", 2502, "m", "Der Säntis ist 2502 m hoch."],
+  ["Auf welcher Höhe liegt der Bahnhof Jungfraujoch, der höchstgelegene Bahnhof Europas?", 3454, "m über Meer", "Auf 3454 m über Meer."],
+  ["Wie hoch ist der Roche-Turm (Bau 2) in Basel, das höchste Gebäude der Schweiz?", 205, "m", "Der Bau 2 ist 205 m hoch."],
+  ["In welchem Jahr erhielten die Frauen in der Schweiz das Stimm- und Wahlrecht auf Bundesebene?", 1971, "", "1971. Im Kanton Appenzell Innerrhoden auf kantonaler Ebene sogar erst 1990.", true],
+  ["In welchem Jahr wurde die Schweiz Mitglied der UNO?", 2002, "", "2002, nach einer Volksabstimmung.", true],
+  ["Wie viel Schokolade isst eine Person in der Schweiz durchschnittlich pro Jahr?", 11, "kg", "Rund 11 kg pro Person und Jahr, einer der höchsten Werte der Welt."],
+  ["Wie viele Knochen hat ein erwachsener Mensch?", 206, "Knochen", "206 Knochen. Babys haben noch mehr, einige wachsen später zusammen."],
+  ["Wie viele Muskeln hat der menschliche Körper ungefähr?", 650, "Muskeln", "Je nach Zählweise rund 650 Muskeln."],
+  ["Wie viele Haare wachsen ungefähr auf dem Kopf eines Menschen?", 100000, "Haare", "Rund 100'000 Haare."],
+  ["Wie oft schlägt das Herz eines Menschen ungefähr an einem Tag?", 100000, "Mal", "Bei rund 70 Schlägen pro Minute sind das etwa 100'000 Schläge pro Tag."],
+  ["Wie viele Liter Blut hat ein erwachsener Mensch ungefähr?", 5, "Liter", "Rund 5 bis 6 Liter."],
+  ["Wie schwer ist das Gehirn eines erwachsenen Menschen ungefähr?", 1400, "g", "Etwa 1.3 bis 1.4 kg."],
+  ["Wie viele Zähne hat ein erwachsener Mensch mit Weisheitszähnen?", 32, "Zähne", "32 Zähne."],
+  ["Wie weit ist der Mond durchschnittlich von der Erde entfernt?", 384400, "km", "Rund 384'400 km."],
+  ["Wie weit ist die Sonne durchschnittlich von der Erde entfernt?", 150, "Millionen km", "Rund 150 Millionen km."],
+  ["Wie lange braucht das Licht von der Sonne bis zur Erde?", 8.3, "Minuten", "Rund 8 Minuten und 20 Sekunden."],
+  ["Wie lang ist der Erdumfang am Äquator?", 40075, "km", "Rund 40'075 km."],
+  ["Wie viele Kilometer legt das Licht in einer Sekunde zurück?", 300000, "km", "Knapp 300'000 km pro Sekunde."],
+  ["Wie hoch ist der Mount Everest?", 8849, "m", "8849 m (Messung von 2020)."],
+  ["Wie tief ist der Marianengraben an der tiefsten Stelle?", 11000, "m", "Rund 11'000 m, also tiefer, als der Mount Everest hoch ist."],
+  ["Wie hoch ist der Burj Khalifa in Dubai, das höchste Gebäude der Welt?", 828, "m", "828 m."],
+  ["Wie hoch ist der Eiffelturm mit Antennen?", 330, "m", "Rund 330 m."],
+  ["Wie lang ist die Chinesische Mauer mit allen Abschnitten?", 21196, "km", "Laut einer Vermessung von 2012 rund 21'196 km."],
+  ["Wie viele Länder sind Mitglied der UNO?", 193, "Länder", "193 Mitgliedstaaten."],
+  ["Wie viele Sprachen werden auf der Welt ungefähr gesprochen?", 7000, "Sprachen", "Rund 7000. Viele davon sprechen nur noch sehr wenige Menschen."],
+  ["Wie viele Menschen leben ungefähr auf der Erde?", 8, "Milliarden", "Im November 2022 wurde die Marke von 8 Milliarden erreicht."],
+  ["Wie schnell kann ein Gepard höchstens rennen?", 100, "km/h", "Bis rund 100 km/h, aber nur auf kurzen Strecken."],
+  ["Wie lang kann ein Blauwal werden?", 30, "m", "Bis rund 30 m. Er ist das grösste Tier, das je gelebt hat."],
+  ["In welchem Jahr landeten zum ersten Mal Menschen auf dem Mond?", 1969, "", "Am 20. Juli 1969 (Apollo 11).", true],
+  ["In welchem Jahr fanden die ersten Olympischen Spiele der Neuzeit statt?", 1896, "", "1896 in Athen.", true],
+  ["In welchem Jahr kam das erste iPhone auf den Markt?", 2007, "", "2007.", true],
+  ["Wie lange brauchte Usain Bolt für seinen Weltrekord über 100 m?", 9.58, "Sekunden", "9.58 Sekunden, gelaufen 2009 in Berlin."],
+  ["Wie viele Sekunden hat ein Tag?", 86400, "Sekunden", "24 · 60 · 60 = 86'400."],
+  ["Wie viele Tasten hat ein Klavier?", 88, "Tasten", "88 Tasten: 52 weisse und 36 schwarze."],
+  ["Wie viel Prozent des Körpers einer erwachsenen Person besteht ungefähr aus Wasser?", 60, "%", "Rund 60 %."],
+  ["Wie heiss ist die Oberfläche der Sonne ungefähr?", 5500, "°C", "Rund 5500 °C."],
+  ["Wie viele Länder gibt es in Afrika?", 54, "Länder", "54 anerkannte Staaten."],
+];
+
+const PAUSE_PROMPTS = [
+  "Alle, die heute schon Velo gefahren sind",
+  "Alle, die ein Haustier haben",
+  "Alle, die Pizza lieber mögen als Pasta",
+  "Alle, die im Sommer Geburtstag haben",
+  "Alle, die schon einmal auf einem Berg über 3000 m waren",
+  "Alle, die ein Instrument spielen",
+  "Alle, die lieber im Meer als im See baden",
+  "Alle, die heute Morgen gefrühstückt haben",
+  "Alle, die mehr als zwei Sprachen sprechen",
+  "Alle, die schon einmal im Tessin waren",
+  "Alle, die gerne Fussball schauen",
+  "Alle, die Geschwister haben",
+  "Alle, die lieber Sommer als Winter haben",
+  "Alle, die schon einmal Ski oder Snowboard gefahren sind",
+  "Alle, die heute Socken mit einer Farbe ausser Schwarz oder Weiss tragen",
+];
+
+/* =====================================================================
+   Inhalte Kurzformate: Begriffe raten, Wer bin ich?, Logikrätsel
+   ===================================================================== */
+// Begriffe nach Schwierigkeit 1–3 (Stufe gewichtet die Auswahl)
+const WORDS = {
+  1: ["Velo", "Zahnbürste", "Regenschirm", "Schneemann", "Fussball", "Pizza", "Kühlschrank", "Elefant", "Feuerwehr",
+    "Geburtstag", "Zug", "Brille", "Schokolade", "Bäckerei", "Gitarre", "Pinguin", "Sonnenbrille", "Hausaufgaben",
+    "Wandtafel", "Kaugummi", "Handy", "Spinne", "Schwimmbad", "Zelt", "Luftballon", "Bleistift", "Pyjama", "Banane",
+    "Lift", "Kino", "Hamster", "Feuerwerk", "Leiter", "Schere", "Tannenbaum", "Rucksack", "Trampolin", "Fondue",
+    "Kuh", "Ski", "Zahnspange", "Polizei", "Krokodil", "Glace", "Fernseher", "Känguru", "Zauberstab", "Pfannkuchen"],
+  2: ["Fahrprüfung", "Bergbahn", "Wasserfall", "Erdbeben", "Zauberer", "Leuchtturm", "Staubsauger", "Achterbahn",
+    "Fernbedienung", "Raclette", "Taschenlampe", "Vulkan", "Detektiv", "Selfie", "Marathon", "Kompass", "Igel",
+    "Bibliothek", "Hängematte", "Schnorchel", "Velohelm", "Seilbahn", "Gletscher", "Stau", "Schatzkarte", "Ritterburg",
+    "Zeitlupe", "Kaktus", "Postkarte", "Wecker", "Popcorn", "Flughafen", "Sonnenfinsternis", "Klassenlager",
+    "Pausenglocke", "Znüni", "Muskelkater", "Gewitter", "Murmeltier", "Regenbogen", "Schneeballschlacht", "Rolltreppe",
+    "Zahnfee", "Weltraum", "Bauernhof", "Schiedsrichter", "Kopfhörer", "Sackmesser"],
+  3: ["Demokratie", "Freundschaft", "Langeweile", "Eifersucht", "Gerechtigkeit", "Schwerkraft", "Nachhaltigkeit",
+    "Vorurteil", "Heimweh", "Kompromiss", "Datenschutz", "Zeitverschiebung", "Klimawandel", "Lampenfieber", "Gänsehaut",
+    "Ohrwurm", "Mut", "Neugier", "Fernweh", "Teamgeist", "Verantwortung", "Fairness", "Aberglaube", "Echo",
+    "Schadenfreude", "Erinnerung", "Abstimmung", "Geduld", "Ehrlichkeit", "Gewissen", "Fantasie", "Stress",
+    "Höhenangst", "Zufall", "Rekord", "Inflation", "Evolution", "Gleichberechtigung"],
+};
+const WORD_WEIGHTS = { 7: [0.5, 0.4, 0.1], 8: [0.3, 0.45, 0.25], 9: [0.15, 0.45, 0.4] };
+
+/* Wer bin ich? [Kategorie, Lösung, [5 Hinweise, von schwer bis leicht]] */
+const WHO = [
+  ["Tier", "Murmeltier", ["Ich verbringe rund ein halbes Jahr im Winterschlaf.", "Ich lebe in den Alpen in Bauen unter der Erde.", "Droht Gefahr, warne ich die anderen mit einem lauten Pfiff.", "Ich bin ein Nagetier, etwa so gross wie eine Katze.", "In meinem Namen steckt das Wort «murmeln»."]],
+  ["Tier", "Pinguin", ["Die meisten Arten von mir leben auf der Südhalbkugel.", "Meine Flügel sind zu Flossen geworden.", "Ich kann nicht fliegen, aber sehr gut tauchen.", "Ich sehe aus, als würde ich immer einen Frack tragen.", "Ich lebe zum Beispiel in der Antarktis und watschle auf zwei Beinen."]],
+  ["Tier", "Chamäleon", ["Ich kann meine Augen unabhängig voneinander bewegen.", "Meine Zunge kann länger sein als mein Körper.", "Ich bin ein Reptil und lebe meist auf Bäumen.", "Ich fange Insekten blitzschnell mit der Zunge.", "Ich bin berühmt dafür, dass ich meine Farbe ändern kann."]],
+  ["Tier", "Biene", ["Ich verständige mich mit anderen durch einen Tanz.", "Ich lebe in einem Volk mit einer Königin.", "Ich bestäube viele Blüten und Obstbäume.", "Ich habe einen Stachel und sammle Nektar.", "Ich mache Honig."]],
+  ["Tier", "Elefant", ["Mit meiner Nase kann ich Wasser ansaugen und mich duschen.", "Meine Stosszähne sind aus Elfenbein.", "Es gibt mich in Afrika und in Asien.", "Ich bin das grösste Landtier der Erde.", "Ich habe einen Rüssel und grosse Ohren."]],
+  ["Tier", "Fledermaus", ["Ich orientiere mich mit Echos.", "Ich bin das einzige Säugetier, das richtig fliegen kann.", "Tagsüber hänge ich kopfüber.", "Ich bin nachtaktiv und fresse in der Schweiz vor allem Insekten.", "Mein Name klingt nach einem kleinen Nagetier, das flattert."]],
+  ["Tier", "Steinbock", ["Im 19. Jahrhundert wurde ich in der Schweiz ausgerottet, ab 1906 wieder angesiedelt.", "Ich bin im Wappen des Kantons Graubünden.", "Ich klettere sicher an steilen Felswänden.", "Die Männchen haben lange, gebogene Hörner.", "Ich bin ein Wildtier der Alpen und gehöre zu den Ziegen."]],
+  ["Ort", "Matterhorn", ["Ich wurde 1865 zum ersten Mal bestiegen.", "Ich stehe an der Grenze zwischen der Schweiz und Italien.", "Ich bin 4478 m hoch.", "Zu meinen Füssen liegt das autofreie Zermatt.", "Ich bin der wohl berühmteste Berg der Schweiz, mit meiner Pyramidenform."]],
+  ["Ort", "Rom", ["Der Sage nach wurde ich von Zwillingen gegründet, die eine Wölfin aufzog.", "In mir liegt ein ganzer anderer Staat.", "Man nennt mich die «Ewige Stadt».", "Bei mir steht das Kolosseum.", "Ich bin die Hauptstadt Italiens."]],
+  ["Ort", "Venedig", ["Ich bin auf über 100 kleinen Inseln gebaut.", "Jedes Jahr findet bei mir ein berühmter Maskenkarneval statt.", "Bei Hochwasser steht mein Markusplatz unter Wasser.", "Statt Strassen habe ich Kanäle.", "Man fährt bei mir mit Gondeln."]],
+  ["Ort", "Bern", ["Ich liege in einer Schlaufe der Aare.", "Meine Altstadt gehört zum UNESCO-Welterbe.", "Mein bekannter Uhrturm heisst Zytglogge.", "Bei mir gibt es einen Bärenpark.", "Hier tagen der Bundesrat und das Parlament."]],
+  ["Ort", "Paris", ["Mein bekanntestes Bauwerk sollte ursprünglich nur 20 Jahre stehen bleiben.", "Durch mich fliesst die Seine.", "Im Louvre hängt bei mir die Mona Lisa.", "2024 fanden bei mir die Olympischen Sommerspiele statt.", "Ich bin die Hauptstadt Frankreichs."]],
+  ["Ort", "Mond", ["Meine Schwerkraft ist etwa ein Sechstel derjenigen der Erde.", "Zusammen mit der Sonne verursache ich Ebbe und Flut.", "Zwölf Menschen sind schon auf mir herumgelaufen.", "Ich zeige der Erde immer die gleiche Seite.", "Ich leuchte nachts am Himmel, habe aber kein eigenes Licht."]],
+  ["Person", "Albert Einstein", ["Ich wurde 1879 in Ulm geboren.", "Ich arbeitete einige Jahre am Patentamt in Bern.", "1921 bekam ich den Nobelpreis für Physik.", "Ein Foto, auf dem ich die Zunge herausstrecke, ist weltberühmt.", "Meine bekannteste Formel lautet E = mc²."]],
+  ["Person", "Roger Federer", ["Als Kind war ich Balljunge an einem Turnier in meiner Heimatstadt.", "Ich wurde 1981 in Basel geboren.", "Ich habe 20 Grand-Slam-Turniere im Einzel gewonnen.", "In Wimbledon habe ich achtmal gewonnen.", "Ich bin wohl der berühmteste Schweizer Tennisspieler."]],
+  ["Person", "Wilhelm Tell", ["Ob es mich wirklich gab, ist unter Fachleuten sehr umstritten.", "Ich soll mich geweigert haben, einen Hut auf einer Stange zu grüssen.", "Mein Gegenspieler war der Landvogt Gessler.", "Friedrich Schiller schrieb ein Theaterstück über mich.", "Ich musste mit der Armbrust einen Apfel vom Kopf meines Sohnes schiessen."]],
+  ["Person", "Leonardo da Vinci", ["Viele meiner Notizen schrieb ich in Spiegelschrift.", "Ich zeichnete Pläne für Flugmaschinen.", "Ich lebte zur Zeit der Renaissance in Italien.", "Ich malte «Das Abendmahl».", "Mein berühmtestes Bild ist die Mona Lisa."]],
+  ["Figur", "Heidi", ["Meine Geschichte wurde 1880 zum ersten Mal veröffentlicht.", "Eine Zeit lang musste ich in Frankfurt leben.", "Meine Freundin Klara sitzt im Rollstuhl.", "Mein Freund heisst Geissenpeter.", "Ich lebe mit meinem Grossvater, dem Alpöhi, auf der Alp."]],
+  ["Figur", "Harry Potter", ["Als Kind wohnte ich in einem Schrank unter der Treppe.", "Mein Pate heisst Sirius.", "Beim Quidditch spiele ich als Sucher.", "Meine besten Freunde heissen Ron und Hermine.", "Ich habe eine blitzförmige Narbe auf der Stirn."]],
+  ["Gegenstand", "Smartphone", ["Ich habe mehr Rechenleistung als die Computer der ersten Mondlandung.", "Ich habe meistens zwei oder mehr Kameras.", "Viele Jugendliche verbringen jeden Tag Stunden mit mir.", "Ohne Akku bin ich nutzlos.", "Man telefoniert mit mir und wischt über meinen Bildschirm."]],
+  ["Gegenstand", "Regenschirm", ["Ich habe ein Gerippe, aber keine Knochen.", "Laut Aberglauben soll man mich drinnen nicht öffnen.", "Bei starkem Wind stülpe ich mich manchmal um.", "Man kann mich zusammenklappen.", "Ich schütze dich vor Regen."]],
+  ["Gegenstand", "Velo", ["Mein Vorfahre von 1817 hatte noch keine Pedale.", "Meistens habe ich eine Kette.", "Ein Helm gehört zu mir dazu.", "Ich brauche normalerweise weder Benzin noch Strom.", "Ich habe zwei Räder und Pedale."]],
+  ["Essen", "Schokolade", ["Die Azteken tranken mich als bitteres Getränk.", "Ich werde aus Bohnen gemacht, die in den Tropen wachsen.", "Wenn es warm ist, schmelze ich.", "Die Schweiz ist berühmt für mich.", "Es gibt mich als Tafel: dunkel, hell oder weiss."]],
+  ["Essen", "Fondue", ["Ich werde in einem Caquelon zubereitet.", "Wer bei mir sein Brot verliert, muss oft eine Strafe machen.", "Als «moitié-moitié» bestehe ich aus Gruyère und Vacherin.", "Man isst mich mit langen Gabeln aus einem gemeinsamen Topf.", "Ich bin geschmolzener Käse und ein Schweizer Nationalgericht."]],
+];
+
+/* Logikrätsel: [Stufe 1–5, Aufgabe, Lösung, Erklärung] */
+const LOGIC = [
+  [1, "Anna ist grösser als Ben. Ben ist grösser als Cem. Dana ist kleiner als Cem. Wer ist am zweitkleinsten?", "Cem", "Reihenfolge von gross nach klein: Anna, Ben, Cem, Dana."],
+  [1, "Welches Wort passt nicht in die Reihe: Apfel, Birne, Kartoffel, Kirsche, Pflaume?", "Kartoffel", "Alle anderen sind Obst, die Kartoffel ist ein Gemüse (eine Knolle)."],
+  [1, "Wenn gestern Freitag war: Welcher Tag ist übermorgen?", "Montag", "Heute ist Samstag, morgen Sonntag, übermorgen Montag."],
+  [1, "Wie viele Beine haben 3 Hühner, 2 Kühe und 1 Spinne zusammen?", "22", "3 · 2 + 2 · 4 + 8 = 6 + 8 + 8 = 22."],
+  [2, "Welche Zahl kommt als Nächstes? 2, 6, 12, 20, 30, …", "42", "Die Abstände wachsen um 2: +4, +6, +8, +10, +12. (Oder: 1·2, 2·3, 3·4, 4·5, 5·6, 6·7.)"],
+  [2, "In einem Korb liegen 6 Äpfel. 6 Kinder nehmen je einen Apfel, trotzdem bleibt ein Apfel im Korb. Wie geht das?", "Das letzte Kind nimmt den Korb mit dem Apfel.", "Jedes Kind hat einen Apfel, aber einer liegt noch im Korb."],
+  [2, "Ein Bus fährt mit 7 Personen los. An der ersten Haltestelle steigen 3 aus und 5 ein. An der zweiten steigen 4 aus und 2 ein. Wie viele Haltestellen hat der Bus angefahren?", "2", "Gefragt war nach den Haltestellen, nicht nach den Personen. Genau lesen lohnt sich!"],
+  [3, "3 Katzen fangen in 3 Minuten 3 Mäuse. Wie viele Katzen braucht man, um in 100 Minuten 100 Mäuse zu fangen?", "3", "Eine Katze fängt in 3 Minuten eine Maus, also in 100 Minuten etwa 33. Drei Katzen schaffen zusammen 100."],
+  [3, "Eine analoge Uhr zeigt im Spiegel 3:00 Uhr. Wie spät ist es wirklich?", "9:00 Uhr", "Der Spiegel vertauscht links und rechts: Der kleine Zeiger auf der 3 erscheint auf der 9."],
+  [3, "Ein Seil hat zwei Enden. Wie viele Enden haben zweieinhalb Seile?", "6", "Auch das halbe Seil hat zwei Enden: 2 + 2 + 2 = 6."],
+  [3, "Lea, Mira und Zoe mögen je ein anderes Tier: Hunde, Katzen oder Pferde. Lea mag keine Tiere mit Hufen. Mira mag weder Katzen noch Hunde. Zoe mag keine Hunde. Wer mag welches Tier?", "Lea: Hunde, Mira: Pferde, Zoe: Katzen", "Mira bleibt nur das Pferd. Zoe mag keine Hunde, also Katzen. Lea bekommt die Hunde."],
+  [3, "Ein Monat hat 31 Tage und beginnt an einem Montag. Auf welchen Wochentag fällt der letzte Tag?", "Mittwoch", "Tag 29 ist wieder ein Montag (28 Tage = 4 Wochen). Tag 30 ist Dienstag, Tag 31 Mittwoch."],
+  [3, "Ordne die Ziffern 0 bis 9 alphabetisch nach ihrem deutschen Namen (null, eins, zwei …). Welche Ziffer steht ganz am Schluss?", "2 (zwei)", "Alphabetisch: acht, drei, eins, fünf, neun, null, sechs, sieben, vier, zwei."],
+  [4, "Ein Vater ist heute viermal so alt wie sein Sohn. In 20 Jahren ist er nur noch doppelt so alt. Wie alt ist der Sohn heute?", "10 Jahre", "Sohn 10, Vater 40. In 20 Jahren: 30 und 60, also doppelt so alt."],
+  [4, "Ich bin eine zweistellige Zahl. Meine Quersumme ist 9. Vertauscht man meine Ziffern, werde ich um 27 kleiner. Wer bin ich?", "63", "6 + 3 = 9 und 63 − 36 = 27."],
+  [4, "Wie oft kommt die Ziffer 9 vor, wenn man alle Zahlen von 1 bis 100 aufschreibt?", "20-mal", "Als Einer: 9, 19, …, 99 (10-mal). Als Zehner: 90 bis 99 (10-mal). Zusammen 20."],
+  [5, "A sagt: «B lügt.» B sagt: «C lügt.» C sagt: «A und B lügen beide.» Wer sagt die Wahrheit?", "Nur B", "Wenn B die Wahrheit sagt, lügt C. Also stimmt «A und B lügen beide» nicht, das passt. A sagt «B lügt», das ist falsch, A lügt. Alles passt zusammen."],
+  [5, "Zwei Züge sind 100 km voneinander entfernt und fahren mit je 50 km/h aufeinander zu. Eine Fliege fliegt mit 75 km/h zwischen ihnen hin und her, bis sich die Züge treffen. Wie weit fliegt die Fliege?", "75 km", "Die Züge treffen sich nach 1 Stunde (zusammen 100 km/h). In dieser Stunde fliegt die Fliege 75 km."],
+  [5, "Ein Glas ist halb voll. Du giesst die Hälfte davon weg. Dann füllst du die Hälfte des leeren Teils wieder auf. Wie voll ist das Glas jetzt?", "5/8", "Nach dem Weggiessen: 1/4 voll, 3/4 leer. Die Hälfte von 3/4 ist 3/8. 1/4 + 3/8 = 5/8."],
+];
+
+/* =====================================================================
+   Themen-Breakouts: jedes Team bekommt eine eigene Variante des Auftrags
+   Phasen: w = Anteil an der verfügbaren Arbeitszeit
+   ===================================================================== */
+const BREAKOUTS = [
+  { id: "erfinder", icon: "💡", title: "Erfinderwerkstatt", short: "Ein Produkt erfinden, das ein Alltagsproblem löst, und es verkaufen.",
+    auftrag: "Erfindet ein Produkt, das euer Problem löst. Es darf verrückt sein, muss aber erklärt werden können: Wie heisst es? Wie funktioniert es? Wer braucht es?",
+    variantLabel: "Euer Problem",
+    variants: ["Der Schulweg bei Regen", "Vergessene Hausaufgaben", "Langeweile in der Pause", "Zu viel Abfall beim Znüni", "Kalte Füsse im Winter", "Schlüssel, die immer verschwinden", "Streit um die Fernbedienung", "Zu früh aufstehen müssen"],
+    phases: [
+      { t: "Ideen sammeln", w: 3, text: "Alle Ideen aufschreiben, auch verrückte. Noch nichts aussortieren!" },
+      { t: "Erfindung auswählen und skizzieren", w: 4, text: "Eine Idee auswählen. Skizze zeichnen, Namen erfinden, drei Vorteile notieren." },
+      { t: "Pitch vorbereiten", w: 3, text: "Kurze Verkaufspräsentation üben. Wer sagt was? Gibt es einen Slogan?" },
+    ],
+    presLabel: "Pitch", presMin: 1, criteria: "Originalität · Nutzen · Präsentation" },
+  { id: "debatte", icon: "⚖️", title: "Pro & Contra", short: "Zwei Seiten, ein Thema: Argumente sammeln und debattieren.", debate: true,
+    statements: ["Handys sollten an der Schule ganz verboten sein.", "Hausaufgaben sollten abgeschafft werden.", "Die Schule sollte erst um 9 Uhr beginnen.",
+      "Schon 16-Jährige sollten in der Schweiz abstimmen dürfen.", "Tiere gehören nicht in den Zoo.", "Alle Schülerinnen und Schüler sollten eine Schuluniform tragen.",
+      "Süssgetränke sollten an Schulen verboten sein.", "Jede Klasse sollte einmal pro Woche draussen unterrichtet werden."],
+    auftrag: "Sammelt Argumente für eure Seite, egal, was ihr selbst denkt. Überlegt auch, was die Gegenseite sagen wird.",
+    variantLabel: "Eure Seite",
+    phases: [
+      { t: "Argumente sammeln", w: 4, text: "Möglichst viele Argumente für eure Seite notieren." },
+      { t: "Die besten drei auswählen", w: 3, text: "Die drei stärksten Argumente auswählen und je ein Beispiel finden. Was antwortet ihr der Gegenseite?" },
+      { t: "Rede vorbereiten", w: 2, text: "Wer spricht? Die Eröffnungsrede (1 Minute) üben." },
+    ],
+    presLabel: "Rede", presMin: 1, criteria: "Überzeugende Argumente · Beispiele · Fairness" },
+  { id: "insel", icon: "🏝️", title: "Gestrandet!", short: "Auf einer einsamen Insel überleben, mit nur 5 Gegenständen.",
+    auftrag: "Euer Schiff ist gesunken, ihr seid auf einer einsamen Insel gestrandet. Von der Liste dürft ihr nur 5 Gegenstände behalten. Welche nehmt ihr und warum? Wie plant ihr die ersten drei Tage?",
+    list: "Seil · Taschenmesser · leere Wasserflasche · Spiegel · Plane · Angelschnur · Feuerzeug · Kochtopf · Handy ohne Netz · 1 kg Schokolade · Wolldecke · Taschenlampe · Erste-Hilfe-Set · Kompass · Buch «Essbare Pflanzen»",
+    variantLabel: "Eure Insel",
+    variants: ["Tropische Insel mit Palmen", "Felsige Insel im Nordmeer", "Insel mit einem Vulkan", "Kleine Sandinsel ohne Bäume", "Insel mit dichtem Dschungel", "Insel mit einem alten Leuchtturm"],
+    phases: [
+      { t: "Gegenstände auswählen", w: 4, text: "Gemeinsam 5 Gegenstände wählen und für jeden einen guten Grund notieren." },
+      { t: "Überlebensplan", w: 3, text: "Plan für die ersten drei Tage: Wasser, Unterkunft, Essen, Rettung." },
+      { t: "Präsentation vorbereiten", w: 2, text: "Kurz und klar: unsere 5 Gegenstände und unser Plan." },
+    ],
+    presLabel: "Präsentation", presMin: 1.5, criteria: "Gute Begründungen · Cleverer Plan · Präsentation" },
+  { id: "zukunft", icon: "🚀", title: "Schule 2050", short: "Wie sieht die Schule der Zukunft aus? Jedes Team plant einen Bereich.",
+    auftrag: "Stellt euch die Schule im Jahr 2050 vor und gestaltet euren Bereich: Was ist anders als heute? Was bleibt gleich? Zeichnet ein Plakat.",
+    variantLabel: "Euer Bereich",
+    variants: ["Unterricht und Lernen", "Pausenplatz", "Mensa und Essen", "Schulweg und Verkehr", "Technik im Schulzimmer", "Umwelt und Energie", "Sport und Bewegung", "Regeln und Mitbestimmung"],
+    phases: [
+      { t: "Ideen sammeln", w: 3, text: "Was stört euch heute? Was wäre in 25 Jahren möglich? Alles notieren." },
+      { t: "Plakat gestalten", w: 5, text: "Die besten Ideen auf ein Plakat bringen: Zeichnung, Stichworte, Titel." },
+      { t: "Präsentation vorbereiten", w: 2, text: "Wer stellt was vor? Höchstens 90 Sekunden." },
+    ],
+    presLabel: "Präsentation", presMin: 1.5, criteria: "Kreativität · Durchdacht · Plakat" },
+  { id: "reporter", icon: "🎙️", title: "Zeitreise-Reporter", short: "Live-Bericht von einem historischen Ereignis, wie in der Tagesschau.",
+    auftrag: "Ihr reist mit der Zeitmaschine zu eurem Ereignis und berichtet live wie ein Fernsehteam: Moderation im Studio, Reporterin oder Reporter vor Ort, Interview mit einer Zeitzeugin oder einem Zeitzeugen. Bleibt so nah wie möglich an der Wirklichkeit.",
+    variantLabel: "Euer Ereignis",
+    variants: ["1291: Der Bundesbrief wird besiegelt", "1492: Kolumbus erreicht Amerika", "1896: Erste Olympische Spiele der Neuzeit in Athen", "1912: Der Untergang der Titanic",
+      "1969: Die erste Mondlandung", "1971: Frauenstimmrecht in der Schweiz", "1989: Der Fall der Berliner Mauer", "2016: Eröffnung des Gotthard-Basistunnels"],
+    phases: [
+      { t: "Was wissen wir?", w: 3, text: "Alles zusammentragen, was ihr über das Ereignis wisst: Wer? Wo? Was? Warum ist es wichtig?" },
+      { t: "Rollen und Drehbuch", w: 4, text: "Rollen verteilen und den Ablauf der Sendung festlegen." },
+      { t: "Proben", w: 3, text: "Die Sendung einmal ganz durchspielen. Höchstens 90 Sekunden!" },
+    ],
+    presLabel: "Sendung", presMin: 1.5, criteria: "Inhalt · Lebendigkeit · Zusammenspiel" },
+  { id: "werbung", icon: "🎬", title: "Werbespot", short: "Einen langweiligen Gegenstand in einer Minute unwiderstehlich machen.",
+    auftrag: "Spielt live einen Werbespot (höchstens 1 Minute) für euren Gegenstand. Danach soll er der begehrteste Gegenstand der Welt sein! Mit Slogan, kleiner Szene und Preis.",
+    variantLabel: "Euer Gegenstand",
+    variants: ["Büroklammer", "Radiergummi", "Einzelne Socke", "Kartonschachtel", "Wäscheklammer", "Teelöffel", "Gummiband", "Kieselstein"],
+    phases: [
+      { t: "Ideen sammeln", w: 3, text: "Was kann der Gegenstand alles? Erfindet besondere Fähigkeiten." },
+      { t: "Drehbuch und Slogan", w: 3, text: "Szene festlegen, Rollen verteilen, einen Slogan erfinden." },
+      { t: "Proben", w: 3, text: "Den Spot zweimal durchspielen." },
+    ],
+    presLabel: "Werbespot", presMin: 1, criteria: "Witz · Überzeugungskraft · Schauspiel" },
+  { id: "land", icon: "🏳️", title: "Erfindet ein Land", short: "Ein eigenes Land gründen: Name, Flagge, Gesetze und Nationalgericht.",
+    auftrag: "Gründet ein neues Land! Ihr braucht: Namen, Flagge, Hauptstadt, drei wichtige Gesetze, ein Nationalgericht und einen Feiertag. Und: Wie wird bei euch entschieden?",
+    variantLabel: "Euer Land liegt …",
+    variants: ["auf einer Insel im Pazifik", "hoch in den Bergen", "unter dem Meer", "auf einer Raumstation", "mitten in einer Wüste", "in einem riesigen Wald"],
+    phases: [
+      { t: "Grundideen", w: 3, text: "Name, Hauptstadt, Nationalgericht und Feiertag festlegen." },
+      { t: "Flagge und Gesetze", w: 4, text: "Flagge zeichnen, drei Gesetze formulieren, festlegen, wie entschieden wird." },
+      { t: "Präsentation vorbereiten", w: 2, text: "Euer Land in höchstens 90 Sekunden vorstellen." },
+    ],
+    presLabel: "Präsentation", presMin: 1.5, criteria: "Kreativität · Durchdachte Gesetze · Präsentation" },
+];
+const BO_BY_ID = Object.fromEntries(BREAKOUTS.map((b) => [b.id, b]));
+
+/* =====================================================================
+   Aufgaben-Generatoren (Mathe) – Stufe L 1–6
+   ===================================================================== */
+function genKopf(L) {
+  const r = Math.random();
+  switch (L) {
+    case 1: {
+      if (r < 0.5) { const a = rnd(23, 79), b = rnd(14, 68); return { q: `${a} + ${b}`, a: a + b }; }
+      const a = rnd(52, 99), b = rnd(13, a - 11); return { q: `${a} − ${b}`, a: a - b };
+    }
+    case 2: {
+      if (r < 0.5) { const a = rnd(6, 12), b = rnd(6, 12); return { q: `${a} · ${b}`, a: a * b }; }
+      const a = rnd(210, 890), b = rnd(26, 89);
+      return Math.random() < 0.5 ? { q: `${a} + ${b}`, a: a + b } : { q: `${a} − ${b}`, a: a - b };
+    }
+    case 3: {
+      if (r < 0.5) { const a = rnd(13, 29), b = rnd(3, 9); return { q: `${a} · ${b}`, a: a * b }; }
+      const b = rnd(6, 12), x = rnd(7, 15); return { q: `${b * x} : ${b}`, a: x };
+    }
+    case 4: {
+      if (r < 0.5) {
+        const p = pick([10, 20, 25, 50, 75]);
+        const base = (p === 25 || p === 75) ? 4 * rnd(5, 30) : 10 * rnd(3, 40);
+        return { q: `${p} % von ${base}`, a: round6(base * p / 100) };
+      }
+      const x = pick([0.2, 0.3, 0.4, 0.5, 0.6, 0.8]), n = 10 * rnd(2, 9);
+      return { q: `${fmt(x)} · ${n}`, a: round6(x * n) };
+    }
+    case 5: {
+      if (r < 0.34) { const a = rnd(3, 15), b = rnd(5, 19); return { q: `−${a} − ${b}`, a: -a - b }; }
+      if (r < 0.67) { const a = rnd(3, 9), b = rnd(4, 9); return { q: `(−${a}) · (−${b})`, a: a * b }; }
+      const n = rnd(11, 19); return { q: `${n}²`, a: n * n };
+    }
+    default: {
+      if (r < 0.34) { const p = pick([15, 30, 35, 45]), base = 20 * rnd(3, 20); return { q: `${p} % von ${base}`, a: round6(base * p / 100) }; }
+      if (r < 0.67) { const n = rnd(11, 20); return { q: `√${n * n}`, a: n }; }
+      const a = rnd(2, 5), b = rnd(2, 6), c = rnd(2, 4);
+      return { q: `${a} · (−${b}) + ${c}²`, a: -a * b + c * c };
+    }
+  }
+}
+
+function genFolge(L) {
+  let seq = [], next;
+  const r = Math.random();
+  switch (L) {
+    case 1: { const s = rnd(2, 20), d = rnd(3, 9); for (let i = 0; i < 5; i++) seq.push(s + i * d); next = s + 5 * d; break; }
+    case 2: { const s = rnd(70, 120), d = rnd(4, 12); for (let i = 0; i < 5; i++) seq.push(s - i * d); next = s - 5 * d; break; }
+    case 3: { const f = pick([2, 3]), s = f === 2 ? rnd(1, 7) : rnd(1, 4); for (let i = 0; i < 5; i++) seq.push(s * f ** i); next = s * f ** 5; break; }
+    case 4: { // abwechselnd +a, −b
+      const a = rnd(5, 9), b = rnd(2, 4); let v = rnd(5, 20); seq.push(v);
+      for (let i = 1; i < 6; i++) { v += (i % 2 ? a : -b); if (i < 6) seq.push(v); }
+      next = seq.pop(); break;
+    }
+    case 5: { // wachsende Abstände
+      let v = rnd(1, 10), d = rnd(1, 4); const k = rnd(1, 3);
+      for (let i = 0; i < 6; i++) { seq.push(v); v += d; d += k; }
+      next = seq.pop(); break;
+    }
+    default: {
+      if (r < 0.5) { const s = rnd(2, 6); for (let i = 0; i < 5; i++) seq.push((s + i) ** 2); next = (s + 5) ** 2; }
+      else { let a = rnd(1, 4), b = rnd(a, a + 4); seq = [a, b]; for (let i = 0; i < 4; i++) seq.push(seq[seq.length - 1] + seq[seq.length - 2]); next = seq[seq.length - 1] + seq[seq.length - 2]; }
+    }
+  }
+  return { q: `Wie geht es weiter?<span class="seq">${seq.join(", ")}, …</span>`, a: next, html: true };
+}
+
+function genEinheit(L) {
+  const r = Math.random();
+  const conv = (val, from, to, f) => ({ q: `${fmt(val)} ${from} = ? ${to}`, a: round6(val * f), unit: to });
+  switch (L) {
+    case 1: return r < 0.5 ? conv(rnd(12, 95) / 10, "m", "cm", 100) : conv(rnd(120, 950), "cm", "m", 0.01);
+    case 2: {
+      if (r < 0.34) return conv(rnd(11, 49) / 10, "kg", "g", 1000);
+      if (r < 0.67) return conv(rnd(11, 49) / 10, "l", "dl", 10);
+      return conv(pick([0.25, 0.5, 0.75, 1.5, 2.5]), "l", "ml", 1000);
+    }
+    case 3: return r < 0.6 ? conv(pick([1.5, 2.5, 0.75, 1.25, 3.5, 0.25]), "h", "min", 60) : conv(pick([2.5, 1.5, 3.25, 4.5]), "min", "s", 60);
+    case 4: {
+      if (r < 0.34) return conv(rnd(15, 95) / 10, "m²", "dm²", 100);
+      if (r < 0.67) return conv(rnd(2, 9), "dm²", "cm²", 100);
+      return conv(rnd(11, 99) / 10, "km", "m", 1000);
+    }
+    case 5: {
+      const v = pick([18, 36, 54, 72, 90, 108]);
+      return r < 0.5 ? conv(v, "km/h", "m/s", 1 / 3.6) : conv(v / 3.6, "m/s", "km/h", 3.6);
+    }
+    default: {
+      if (r < 0.34) return conv(pick([0.5, 1.2, 2, 0.25, 3.5]), "m³", "l", 1000);
+      if (r < 0.67) return conv(pick([1, 2.5, 0.5, 3, 1.2]), "ha", "m²", 10000);
+      return conv(pick([500, 250, 1500, 750]), "cm³", "l", 0.001);
+    }
+  }
+}
+
+/* =====================================================================
+   Zustand (nur Teamnamen und Punkte – keine Personendaten)
+   ===================================================================== */
+const STORE_KEY = "sv_state_v1";
+const TEAM_COLORS = ["#2563eb", "#be185d", "#0f766e", "#b45309", "#7c3aed", "#475569"];
+const TEAM_NAMES = ["Murmeltiere", "Steinböcke", "Gipfelstürmer", "Lawinen", "Blitze", "Kometen", "Edelweiss", "Bergdohlen",
+  "Raketen", "Luchse", "Gämsen", "Eisbären", "Füchse", "Adler", "Wirbelwinde", "Polarlichter", "Alpenrosen", "Gletscher"];
+
+function defaultState() {
+  return { stufe: 8, teams: makeTeams(4, []), planCfg: { dur: 45, focus: "mix", type: "quiz" }, lesson: null, quiz: null, est: null, bo: null, words: null, who: null, logic: null,
+    used: [], usedEst: [], usedWords: [], usedWho: [], usedLogic: [] };
+}
+function makeTeams(n, old) {
+  const names = shuffle(TEAM_NAMES.filter((x) => !old.some((t) => t.name === x)));
+  const teams = [];
+  for (let i = 0; i < n; i++) {
+    teams.push(old[i] ? { ...old[i], color: TEAM_COLORS[i] } : { id: "t" + Date.now().toString(36) + i, name: names.pop(), color: TEAM_COLORS[i], score: 0 });
+  }
+  return teams;
+}
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem(STORE_KEY));
+    if (s && Array.isArray(s.teams) && s.teams.length) return Object.assign(defaultState(), s);
+  } catch (e) {}
+  return null;
+}
+let S = loadState() || defaultState();
+function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) {} }
+const teamById = (id) => S.teams.find((t) => t.id === id) || null;
+
+/* =====================================================================
+   Navigation
+   ===================================================================== */
+let currentView = "home";
+let viewStack = [];
+const RENDER = {};
+function showView(id, opts = {}) {
+  if (!opts.noPush && currentView !== id) viewStack.push(currentView);
+  if (viewStack.length > 30) viewStack.shift();
+  if (!["question", "est", "pause", "breakout", "words", "logic"].includes(id)) stopCountdown();
+  if (id !== "question") hideBuzzers();
+  currentView = id;
+  $$(".view").forEach((v) => v.classList.toggle("active", v.id === "view-" + id));
+  if (RENDER[id]) RENDER[id]();
+  renderScorebars();
+  renderLessonBar();
+  window.scrollTo(0, 0);
+}
+function goBack() {
+  const prev = viewStack.pop() || "home";
+  showView(prev, { noPush: true });
+}
+
+/* =====================================================================
+   Ton, Toast, Modal, Konfetti
+   ===================================================================== */
+let audioCtx = null;
+function soundOn() { try { return localStorage.getItem("sv_sound") !== "off"; } catch (e) { return true; } }
+function beep(freq = 880, dur = 0.15, type = "sine", vol = 0.2) {
+  if (!soundOn()) return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    o.connect(g).connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + dur);
+  } catch (e) {}
+}
+function fanfare() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => beep(f, 0.18, "triangle", 0.18), i * 120)); }
+
+let toastTimer = null;
+function toast(msg) {
+  let el = $(".toast");
+  if (!el) { el = document.createElement("div"); el.className = "toast"; el.setAttribute("role", "status"); document.body.appendChild(el); }
+  el.textContent = msg; el.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 2600);
+}
+
+function openModal(html) { $("#modalBox").innerHTML = html; $("#modal").hidden = false; }
+function closeModal() { $("#modal").hidden = true; $("#modalBox").innerHTML = ""; }
+$("#modal").addEventListener("click", (e) => { if (e.target.id === "modal") closeModal(); });
+
+function confetti() {
+  const box = $("#confetti");
+  box.innerHTML = "";
+  const colors = TEAM_COLORS.concat(["#facc15", "#f97316"]);
+  for (let i = 0; i < 90; i++) {
+    const p = document.createElement("i");
+    p.style.left = Math.random() * 100 + "vw";
+    p.style.background = pick(colors);
+    p.style.animationDuration = 2 + Math.random() * 2.5 + "s";
+    p.style.animationDelay = Math.random() * 0.8 + "s";
+    box.appendChild(p);
+  }
+  setTimeout(() => { box.innerHTML = ""; }, 5500);
+}
+
+/* =====================================================================
+   Countdown (rechnet mit Date.now, nicht mit Mitzählen)
+   ===================================================================== */
+let cd = null;
+function countdownHtml(id, sec) {
+  return `<div class="countdown" id="${id}"><div class="cd-bar"><div class="cd-fill"></div></div>
+    <span class="cd-num">${fmtClock(sec)}</span>
+    <button class="btn btn-ghost" data-act="cdRestart" data-sec="${sec}" data-el="${id}" aria-label="Zeit neu starten">↻</button></div>`;
+}
+// endAt (optional): weiterlaufen lassen, z. B. nach Neuladen oder Ansichtswechsel
+function startCountdown(sec, elId, onEnd, endAt) {
+  stopCountdown();
+  cd = { endAt: endAt || Date.now() + sec * 1000, total: sec, elId, onEnd, iv: setInterval(tickCountdown, 200) };
+  const el = document.getElementById(elId);
+  if (el) el.classList.remove("cd-done", "cd-low");
+  tickCountdown();
+}
+function stopCountdown() { if (cd) { clearInterval(cd.iv); cd = null; } }
+function tickCountdown() {
+  if (!cd) return;
+  const el = document.getElementById(cd.elId);
+  const left = Math.max(0, (cd.endAt - Date.now()) / 1000);
+  if (el) {
+    el.querySelector(".cd-num").textContent = fmtClock(Math.ceil(left));
+    el.querySelector(".cd-fill").style.width = (left / cd.total * 100) + "%";
+    el.classList.toggle("cd-low", left <= 5 && left > 0);
+  }
+  if (left <= 0) {
+    const f = cd.onEnd;
+    stopCountdown();
+    if (el) el.classList.add("cd-done");
+    beep(440, 0.5, "square", 0.12);
+    if (f) f();
+  }
+}
+
+/* =====================================================================
+   Punkteleiste
+   ===================================================================== */
+function renderScorebars(bumpId) {
+  const turnId = currentView === "board" || currentView === "question" ? quizTurnTeamId() : null;
+  const html = S.teams.map((t) =>
+    `<button class="score-chip${t.id === turnId ? " turn" : ""}${t.id === bumpId ? " bump" : ""}" style="background:${t.color}" data-act="scoreEdit" data-id="${t.id}" aria-label="Punkte von ${esc(t.name)} anpassen">
+      ${esc(t.name)} <span class="pts">${fmt(t.score)}</span></button>`).join("");
+  $$("[data-scorebar]").forEach((el) => { el.innerHTML = html; });
+}
+function openScoreEdit(id) {
+  const t = teamById(id); if (!t) return;
+  openModal(`<h2>Punkte: ${esc(t.name)}</h2>
+    <p class="big-prompt" style="margin:8px 0" id="scoreEditVal">${fmt(t.score)}</p>
+    <div class="btn-row" style="justify-content:center">
+      ${[-100, -50, 50, 100].map((d) => `<button class="btn" data-act="scoreAdj" data-id="${id}" data-d="${d}">${d > 0 ? "+" : "−"}${Math.abs(d)}</button>`).join("")}
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" data-act="closeModal">Fertig</button></div>`);
+}
+function addScore(id, d) {
+  const t = teamById(id); if (!t) return;
+  t.score += d; save(); renderScorebars(id);
+}
+
+/* =====================================================================
+   Startseite
+   ===================================================================== */
+RENDER.home = function () {
+  $("#stufeChips").innerHTML = [7, 8, 9].map((s) =>
+    `<button class="chip${S.stufe === s ? " on" : ""}" data-act="setStufe" data-v="${s}">${s}. Klasse</button>`).join("");
+  renderTeamEditor();
+  const parts = [];
+  if (S.lesson && S.lesson.startedAt && !S.lesson.done) parts.push(`<button class="btn btn-big continue" data-act="openPlan">▶ Laufende Lektion fortsetzen<small>Phase ${S.lesson.idx + 1} von ${S.lesson.phases.length}</small></button>`);
+  if (S.quiz && !S.quiz.finished) parts.push(`<button class="btn btn-big continue" data-act="toBoard">▶ Teamquiz fortsetzen<small>${quizOpenCount()} Fragen offen</small></button>`);
+  if (S.est && !S.est.finished) parts.push(`<button class="btn btn-big continue" data-act="toEst">▶ Schätzduell fortsetzen<small>Frage ${S.est.i + 1} von ${S.est.qs.length}</small></button>`);
+  if (S.bo && !S.bo.finished) parts.push(`<button class="btn btn-big continue" data-act="toBreakout">▶ Breakout fortsetzen<small>${esc(BO_BY_ID[S.bo.topic].title)}</small></button>`);
+  if (S.words && !S.words.finished) parts.push(`<button class="btn btn-big continue" data-act="toWords">▶ Begriffe raten fortsetzen<small>Runde ${Math.min(S.words.turn + 1, S.words.total)} von ${S.words.total}</small></button>`);
+  if (S.who && !S.who.finished) parts.push(`<button class="btn btn-big continue" data-act="toWho">▶ Wer bin ich? fortsetzen<small>Rätsel ${S.who.i + 1} von ${S.who.qs.length}</small></button>`);
+  if (S.logic && !S.logic.finished) parts.push(`<button class="btn btn-big continue" data-act="toLogic">▶ Logikrätsel fortsetzen<small>Rätsel ${S.logic.i + 1} von ${S.logic.qs.length}</small></button>`);
+  $("#continueBox").innerHTML = parts.length ? `<div class="card" style="display:grid;gap:10px">${parts.join("")}</div>` : "";
+};
+function renderTeamEditor() {
+  $("#teamEditor").innerHTML = `
+    <div class="btn-row" style="align-items:center;margin-bottom:12px">
+      <span class="stepper"><button data-act="teamCount" data-d="-1" aria-label="Ein Team weniger">−</button><span>${S.teams.length}</span><button data-act="teamCount" data-d="1" aria-label="Ein Team mehr">+</button></span>
+      <span class="muted">Teams</span>
+      <span style="flex:1"></span>
+      <button class="btn btn-ghost" data-act="teamNames">🎲 Namen würfeln</button>
+    </div>
+    ${S.teams.map((t) => `<div class="team-row"><span class="team-dot" style="background:${t.color}"></span>
+      <input value="${esc(t.name)}" maxlength="24" data-team-name="${t.id}" aria-label="Teamname">
+      <span class="score">${fmt(t.score)} P.</span></div>`).join("")}
+    <p class="hint">Bitte Fantasienamen verwenden, keine Namen von Schülerinnen und Schülern.
+      ${S.teams.some((t) => t.score) ? `<button class="btn btn-ghost small" style="min-height:0;padding:2px 6px" data-act="resetScores">Punkte auf 0 setzen</button>` : ""}</p>`;
+}
+document.addEventListener("input", (e) => {
+  const id = e.target.dataset.teamName;
+  if (id) { const t = teamById(id); if (t) { t.name = e.target.value.trim() || "Team"; save(); } }
+  const g = e.target.dataset.guess;
+  if (g && S.est) { S.est.guesses[g] = e.target.value; save(); }
+});
+
+/* =====================================================================
+   Lektions-Assistent
+   ===================================================================== */
+const PHASES = {
+  teams: { title: "Ankommen & Teams bilden", icon: "👋" },
+  quiz: { title: "Teamquiz", icon: "🎯" },
+  est: { title: "Schätzduell", icon: "📏" },
+  pause: { title: "Bewegungspause", icon: "🤸" },
+  podium: { title: "Siegerehrung", icon: "🏆" },
+  words: { title: "Begriffe raten", icon: "🗣️" },
+  who: { title: "Wer bin ich?", icon: "🕵️" },
+  logic: { title: "Logikrätsel", icon: "🧠" },
+  breakout: { title: "Themen-Breakout", icon: "🧩" },
+};
+const LESSON_TYPES = [["quiz", "🎯 Quiz & Schätzen"], ["kreativ", "🎨 Kreativ"], ["mix", "🎲 Gemischt"]];
+const LESSON_TEMPLATES = {
+  quiz: {
+    30: [["teams", 3], ["quiz", 14, { rows: 3 }], ["est", 9, { n: 4 }], ["podium", 3]],
+    45: [["teams", 5], ["quiz", 20, { rows: 4 }], ["est", 12, { n: 5 }], ["podium", 4]],
+    90: [["teams", 5], ["quiz", 25, { rows: 5 }], ["est", 12, { n: 5 }], ["pause", 5], ["quiz", 20, { rows: 4 }], ["est", 10, { n: 4 }], ["podium", 5]],
+  },
+  kreativ: {
+    30: [["teams", 3], ["words", 8], ["who", 8, { n: 3 }], ["logic", 7, { n: 3 }], ["podium", 3]],
+    45: [["teams", 4], ["words", 8], ["breakout", 28], ["podium", 4]],
+    90: [["teams", 5], ["words", 10], ["breakout", 35], ["pause", 5], ["who", 12, { n: 4 }], ["logic", 10, { n: 3 }], ["podium", 5]],
+  },
+  mix: {
+    30: [["teams", 3], ["quiz", 12, { rows: 3 }], ["words", 8], ["podium", 3]],
+    45: [["teams", 4], ["quiz", 15, { rows: 3 }], ["words", 8], ["who", 10, { n: 3 }], ["podium", 4]],
+    90: [["teams", 5], ["quiz", 20, { rows: 4 }], ["words", 10], ["est", 10, { n: 4 }], ["pause", 5], ["breakout", 30], ["podium", 5]],
+  },
+};
+function phaseText(p) {
+  const n = S.teams.length;
+  switch (p.kind) {
+    case "teams": return `Klasse in ${n} Teams einteilen (z. B. abzählen 1 bis ${n}), Tische zusammenschieben. Teams und Regeln am Beamer zeigen.`;
+    case "quiz": return `Spielfeld mit ${p.cfg.rows} Fragen pro Kategorie. Die Teams wählen reihum Kategorie und Punktwert. Schwierigere Fragen geben mehr Punkte.`;
+    case "est": return `${p.cfg.n} Schätzfragen. Jedes Team schreibt eine Zahl auf, die Lehrperson tippt sie ein. Wer am nächsten dran ist, gewinnt.`;
+    case "pause": return "Fenster öffnen. Alle stehen auf. Wer zur Aussage passt, wechselt den Platz.";
+    case "podium": return "Rangliste mit Podest und Konfetti. Gewinnerteam applaudieren lassen, Tische zurückstellen.";
+    case "words": { const r = wordsRoundsFor(p.min); return `Eine Person pro Team steht mit dem Rücken zur Leinwand und errät Begriffe, die das eigene Team erklärt. ${r} Runde${r === 1 ? "" : "n"} à 60 s pro Team.`; }
+    case "who": return `${p.cfg.n} Rätsel mit je bis zu 5 Hinweisen. Je früher ein Team richtig rät, desto mehr Punkte (500 bis 100).`;
+    case "logic": return `${p.cfg.n} Denkaufgaben. Alle Teams lösen gleichzeitig auf Papier, danach Auflösung mit Erklärung.`;
+    case "breakout": return "Jedes Team bekommt einen eigenen Auftrag zum gleichen Thema (Thema beim Start wählen). Arbeitsphasen mit Timer, kurze Präsentationen, Abstimmung. Papier und Stifte bereitlegen.";
+  }
+  return "";
+}
+function buildLesson(dur, focus, type) {
+  type = LESSON_TEMPLATES[type] ? type : "quiz";
+  return {
+    dur, focus, type, idx: -1, startedAt: null, phaseStartedAt: null, done: false, usedCats: [],
+    phases: LESSON_TEMPLATES[type][dur].map(([kind, min, cfg]) => ({ kind, min, cfg: cfg || {} })),
+  };
+}
+RENDER.plan = function () {
+  const L = S.lesson;
+  const running = L && L.startedAt && !L.done;
+  const cfg = running ? { dur: L.dur, focus: L.focus, type: L.type || "quiz" } : S.planCfg;
+  if (!cfg.type) cfg.type = "quiz";
+  $("#planType").innerHTML = LESSON_TYPES.map(([v, l]) =>
+    `<button class="chip${cfg.type === v ? " on" : ""}" data-act="planType" data-v="${v}" ${running ? "disabled" : ""}>${l}</button>`).join("");
+  $("#planDur").innerHTML = [30, 45, 90].map((d) =>
+    `<button class="chip${cfg.dur === d ? " on" : ""}" data-act="planDur" data-v="${d}" ${running ? "disabled" : ""}>${d} Minuten</button>`).join("");
+  $("#planFocus").innerHTML = FOCI.map((f) =>
+    `<button class="chip${cfg.focus === f.id ? " on" : ""}" data-act="planFocus" data-v="${f.id}" ${running ? "disabled" : ""}>${f.name}</button>`).join("");
+  $("#planTeamsHint").textContent = `${S.teams.length} Teams, ${S.stufe}. Klasse. Beides lässt sich auf der Startseite ändern.`;
+
+  const lesson = running ? L : buildLesson(cfg.dur, cfg.focus, cfg.type);
+  const total = lesson.phases.reduce((s, p) => s + p.min, 0);
+  $("#planSummary").innerHTML = `<span>⏱️ ${total} Minuten geplant</span><span>➕ ${lesson.dur - total} Minuten Puffer</span>`;
+  $("#planPhases").innerHTML = lesson.phases.map((p, i) => {
+    const st = running ? (i < L.idx ? " done" : i === L.idx ? " current" : "") : "";
+    return `<div class="phase${st}">
+      <div><div class="ph-icon">${PHASES[p.kind].icon}</div><div class="ph-min">${p.min}′</div></div>
+      <div><h3>${i + 1}. ${PHASES[p.kind].title}</h3><p>${phaseText(p)}</p></div>
+      <div class="ph-act">${running ? `<button class="btn ${i === L.idx ? "btn-primary" : ""}" data-act="startPhase" data-i="${i}">${i === L.idx ? "▶ Öffnen" : i < L.idx ? "Nochmals" : "Starten"}</button>` : ""}</div>
+    </div>`;
+  }).join("");
+  $("#planActions").innerHTML = running
+    ? `<button class="btn btn-primary btn-big" data-act="startPhase" data-i="${L.idx}">▶ Aktuelle Phase öffnen</button>
+       <button class="btn btn-danger" data-act="lessonStop">Lektion beenden</button>`
+    : `<button class="btn btn-primary btn-big" data-act="lessonStart">▶ Lektion starten</button>`;
+};
+function lessonStart() {
+  S.lesson = buildLesson(S.planCfg.dur, S.planCfg.focus, S.planCfg.type);
+  S.lesson.startedAt = Date.now();
+  S.teams.forEach((t) => { t.score = 0; });
+  S.quiz = null; S.est = null; S.bo = null; S.words = null; S.who = null; S.logic = null;
+  save();
+  startPhase(0);
+}
+function startPhase(i) {
+  const L = S.lesson; if (!L) return;
+  if (i !== L.idx) { L.idx = i; L.phaseStartedAt = Date.now(); }
+  save();
+  const p = L.phases[i];
+  if (p.kind === "teams") showView("teams");
+  else if (p.kind === "quiz") {
+    if (S.quiz && S.quiz.phase === i && !S.quiz.finished) showView("board");
+    else { quizSetupPrefill({ focus: L.focus, rows: p.cfg.rows, phase: i }); showView("quizSetup"); }
+  } else if (p.kind === "est") {
+    if (S.est && S.est.phase === i && !S.est.finished) showView("est");
+    else { estSetupPrefill({ n: p.cfg.n, phase: i }); showView("estSetup"); }
+  } else if (p.kind === "breakout") {
+    if (S.bo && S.bo.phase === i && !S.bo.finished) showView("breakout");
+    else { boCfg.dur = p.min; boCfg.phase = i; showView("boSetup"); }
+  } else if (p.kind === "words") {
+    if (S.words && S.words.phase === i && !S.words.finished) showView("words");
+    else { wsCfg = { mode: "explain", sec: 60, rounds: wordsRoundsFor(p.min), phase: i }; wordsCreate(); }
+  } else if (p.kind === "who") {
+    if (S.who && S.who.phase === i && !S.who.finished) showView("who");
+    else { whoCfg = { n: p.cfg.n || 3, phase: i }; whoCreate(); }
+  } else if (p.kind === "logic") {
+    if (S.logic && S.logic.phase === i && !S.logic.finished) showView("logic");
+    else { lgCfg = { n: p.cfg.n || 3, timer: 120, phase: i }; logicCreate(); }
+  } else if (p.kind === "pause") showView("pause");
+  else if (p.kind === "podium") showView("podium");
+}
+function nextPhase() {
+  const L = S.lesson; if (!L) return;
+  if (L.idx + 1 < L.phases.length) startPhase(L.idx + 1);
+  else { L.done = true; save(); showView("home"); toast("Lektion beendet. Danke fürs Mitmachen!"); }
+}
+function lessonActive() { return S.lesson && S.lesson.startedAt && !S.lesson.done; }
+function renderLessonBar() {
+  const bar = $("#lessonBar");
+  if (!lessonActive() || currentView === "home") { bar.hidden = true; return; }
+  const L = S.lesson, p = L.phases[L.idx];
+  const phaseLeft = p.min * 60 - (Date.now() - L.phaseStartedAt) / 1000;
+  const totalLeft = L.dur * 60 - (Date.now() - L.startedAt) / 1000;
+  const last = L.idx + 1 >= L.phases.length;
+  bar.hidden = false;
+  bar.innerHTML = `<span class="lb-main" data-act="openPlan" role="button" tabindex="0">📋 Phase ${L.idx + 1}/${L.phases.length} · ${PHASES[p.kind].icon} ${PHASES[p.kind].title}</span>
+    <span class="lb-time ${phaseLeft < 0 ? "over" : ""}" title="Restzeit dieser Phase">${phaseLeft < 0 ? "+" + fmtClock(-phaseLeft) : fmtClock(phaseLeft)}</span>
+    <span class="muted small">Lektion: ${totalLeft < 0 ? "+" + fmtClock(-totalLeft) : fmtClock(totalLeft)}</span>
+    <button class="btn btn-primary" data-act="nextPhase">${last ? "Lektion beenden ✓" : "Nächste Phase ▸"}</button>`;
+}
+setInterval(() => { if (lessonActive()) renderLessonBar(); }, 1000);
+
+/* Teams-Wand */
+RENDER.teams = function () {
+  $("#teamWall").innerHTML = S.teams.map((t, i) => `<div class="team-tile" style="background:${t.color}">Team ${i + 1}<br>${esc(t.name)}</div>`).join("");
+  $("#teamsActions").innerHTML = lessonActive() ? `<button class="btn btn-primary btn-big" data-act="nextPhase">Los geht's ▸</button>` : "";
+};
+
+/* =====================================================================
+   Teamquiz
+   ===================================================================== */
+let qsCfg = { focus: "mix", cats: [], rows: 4, mode: "turn", timer: 30, phase: null };
+function catsForFocus(focus) { return CATS.filter((c) => focus === "mix" || c.focus === focus); }
+function randomCats(focus, n, avoid = []) {
+  if (focus === "mix") {
+    // ausgewogen: Allgemeinwissen, Mathe und Deutsch abwechselnd
+    const pools = ["aw", "mathe", "deutsch"].map((f) => shuffle(CATS.filter((c) => c.focus === f && !avoid.includes(c.id))));
+    const out = [];
+    for (let i = 0; out.length < n && i < 30; i++) { const pool = pools[i % 3]; if (pool.length) out.push(pool.pop().id); }
+    return out;
+  }
+  let pool = shuffle(catsForFocus(focus).filter((c) => !avoid.includes(c.id)));
+  if (pool.length < n) pool = pool.concat(shuffle(catsForFocus(focus).filter((c) => avoid.includes(c.id))));
+  return pool.slice(0, n).map((c) => c.id);
+}
+function quizSetupPrefill(o) {
+  qsCfg.focus = o.focus || qsCfg.focus;
+  qsCfg.rows = o.rows || qsCfg.rows;
+  qsCfg.phase = o.phase ?? null;
+  const n = qsCfg.rows >= 5 ? 5 : 4;
+  const avoid = S.lesson && o.phase != null ? S.lesson.usedCats : [];
+  qsCfg.cats = randomCats(qsCfg.focus, Math.min(n, catsForFocus(qsCfg.focus).length), avoid);
+}
+RENDER.quizSetup = function () {
+  $("#qsFocus").innerHTML = FOCI.map((f) => `<button class="chip${qsCfg.focus === f.id ? " on" : ""}" data-act="qsFocus" data-v="${f.id}">${f.name}</button>`).join("");
+  $("#qsCats").innerHTML = catsForFocus(qsCfg.focus).map((c) =>
+    `<button class="chip${qsCfg.cats.includes(c.id) ? " on" : ""}" data-act="qsCat" data-v="${c.id}">${c.icon} ${c.name}</button>`).join("");
+  $("#qsCatCount").textContent = `(${qsCfg.cats.length} gewählt)`;
+  $("#qsRows").innerHTML = [3, 4, 5].map((r) => `<button class="chip${qsCfg.rows === r ? " on" : ""}" data-act="qsRows" data-v="${r}">${r} (bis ${r * 100} Punkte)</button>`).join("");
+  $("#qsMode").innerHTML = [["turn", "🔁 Reihum"], ["buzzer", "🔔 Buzzer"]].map(([v, l]) =>
+    `<button class="chip${qsCfg.mode === v ? " on" : ""}" data-act="qsMode" data-v="${v}">${l}</button>`).join("");
+  $("#qsModeHint").textContent = qsCfg.mode === "turn"
+    ? "Die Teams wählen reihum eine Frage. Weiss das Team die Antwort nicht, darf die Lehrperson die Punkte einem anderen Team geben."
+    : "Alle Teams dürfen antworten. Wer zuerst seine Farbe am Tablet antippt (oder Taste 1–6 drückt), ist dran. Bei falscher Antwort sind die anderen dran.";
+  $("#qsTimer").innerHTML = [[0, "Aus"], [20, "20 s"], [30, "30 s"], [60, "60 s"]].map(([v, l]) =>
+    `<button class="chip${qsCfg.timer === v ? " on" : ""}" data-act="qsTimer" data-v="${v}">${l}</button>`).join("");
+};
+
+function rowDifficulty(rows, r) { return ({ 3: [1, 3, 5], 4: [1, 2, 4, 5], 5: [1, 2, 3, 4, 5] })[rows][r]; }
+function genLevel(diff) { return clamp(S.stufe === 7 ? diff : S.stufe === 8 ? diff + (diff >= 4 ? 1 : 0) : diff + 1, 1, 6); }
+
+function makeCell(catId, diff, taken) {
+  const cat = CAT_BY_ID[catId];
+  if (cat.gen) {
+    const g = cat.gen(genLevel(diff));
+    return { q: g.html || g.unit ? g.q : `${g.q} = ?`, html: !!g.html, a: g.unit ? `${fmt(g.a)} ${g.unit}` : fmt(g.a), opts: null, id: null };
+  }
+  const items = BANK[catId];
+  const target = diff + ({ 7: -0.5, 8: 0, 9: 0.5 })[S.stufe];
+  const usedSet = new Set(S.used);
+  let best = [], bestScore = Infinity;
+  items.forEach((it, i) => {
+    const id = catId + "-" + i;
+    if (taken.has(id)) return;
+    const score = Math.abs(it[0] - target) + (usedSet.has(id) ? 10 : 0);
+    if (score < bestScore - 1e-9) { bestScore = score; best = [i]; }
+    else if (Math.abs(score - bestScore) < 1e-9) best.push(i);
+  });
+  const i = pick(best);
+  const it = items[i], id = catId + "-" + i;
+  taken.add(id);
+  return { q: it[1], html: false, a: it[2], opts: it[3] ? shuffle([it[2], ...it[3]]) : null, id };
+}
+function quizCreate() {
+  if (qsCfg.cats.length < 2) { toast("Bitte mindestens 2 Kategorien wählen."); return; }
+  const taken = new Set();
+  const cells = [];
+  for (let r = 0; r < qsCfg.rows; r++) {
+    cells.push(qsCfg.cats.map((c) => makeCell(c, rowDifficulty(qsCfg.rows, r), taken)));
+  }
+  S.used = S.used.concat([...taken]).slice(-400);
+  S.quiz = { cats: qsCfg.cats.slice(), rows: qsCfg.rows, cells, mode: qsCfg.mode, timer: qsCfg.timer, turn: 0, open: null, finished: false, phase: qsCfg.phase };
+  if (S.lesson && qsCfg.phase != null) S.lesson.usedCats = S.lesson.usedCats.concat(qsCfg.cats);
+  save();
+  viewStack = viewStack.filter((v) => v !== "quizSetup");
+  showView("board", { noPush: true });
+}
+function quizOpenCount() { return S.quiz ? S.quiz.cells.flat().filter((c) => !c.done).length : 0; }
+function quizTurnTeamId() {
+  const qz = S.quiz;
+  if (!qz || qz.mode !== "turn" || !S.teams.length) return null;
+  return S.teams[qz.turn % S.teams.length].id;
+}
+
+RENDER.board = function () {
+  const qz = S.quiz;
+  if (!qz) { showView("home", { noPush: true }); return; }
+  const board = $("#board");
+  board.style.setProperty("--cols", qz.cats.length);
+  let html = qz.cats.map((c) => `<div class="board-head"><span class="ic">${CAT_BY_ID[c].icon}</span><span class="nm">${CAT_BY_ID[c].name}</span></div>`).join("");
+  qz.cells.forEach((row, r) => row.forEach((cell, c) => {
+    const val = (r + 1) * 100;
+    if (cell.done) {
+      const t = teamById(cell.by);
+      html += `<button class="cell done${t ? "" : " none"}" style="${t ? "background:" + t.color : ""}" data-act="cellReopen" data-r="${r}" data-c="${c}" aria-label="${val} Punkte, gespielt">${t ? esc(t.name) + "<br>+" + val : "–"}</button>`;
+    } else {
+      html += `<button class="cell" data-act="cellOpen" data-r="${r}" data-c="${c}">${val}</button>`;
+    }
+  }));
+  board.innerHTML = html;
+  const tid = quizTurnTeamId(), t = tid && teamById(tid);
+  $("#turnBanner").innerHTML = t && quizOpenCount() ? `<p class="turn-banner"><span style="background:${t.color}">${esc(t.name)}</span> wählt eine Frage</p>` : "";
+  $("#boardDone").innerHTML = quizOpenCount() ? "" : `<div class="card" style="text-align:center;margin-top:16px">
+      <p class="big-prompt" style="margin:6px 0">🎉 Alle Fragen gespielt!</p>
+      <div class="btn-row" style="justify-content:center">${lessonActive() && qz.phase === S.lesson.idx
+        ? `<button class="btn btn-primary btn-big" style="width:auto" data-act="nextPhase">Nächste Phase ▸</button>`
+        : `<button class="btn btn-primary btn-big" style="width:auto" data-act="quizEnd">🏆 Zur Rangliste</button>`}</div></div>`;
+};
+
+/* Frage-Ansicht – flüchtiger Zustand (Buzzer) wird nicht gespeichert */
+let qv = { revealed: false, buzzed: null, locked: new Set(), awarded: undefined };
+function openCell(r, c) {
+  S.quiz.open = { r, c }; save();
+  qv = { revealed: false, buzzed: null, locked: new Set(), awarded: undefined };
+  showView("question");
+}
+RENDER.question = function () {
+  const qz = S.quiz;
+  if (!qz || !qz.open) { showView("board", { noPush: true }); return; }
+  const { r, c } = qz.open, cell = qz.cells[r][c], cat = CAT_BY_ID[qz.cats[c]];
+  $("#qHead").innerHTML = `<span class="pill">${cat.icon} ${esc(cat.name)}</span><span class="pill pill-strong">${(r + 1) * 100} Punkte</span>`;
+  $("#qText").innerHTML = cell.html ? cell.q : esc(cell.q);
+  renderQuestionDynamic();
+  if (qz.timer && !cell.done) {
+    $("#qCountdownWrap").innerHTML = countdownHtml("qCountdown", qz.timer);
+    startCountdown(qz.timer, "qCountdown");
+  } else $("#qCountdownWrap").innerHTML = "";
+  if (qz.mode === "buzzer" && !cell.done) showBuzzers(); else hideBuzzers();
+};
+function renderQuestionDynamic() {
+  const qz = S.quiz, { r, c } = qz.open, cell = qz.cells[r][c], val = (r + 1) * 100;
+  const show = qv.revealed || cell.done;
+  $("#qOpts").innerHTML = cell.opts ? cell.opts.map((o, i) =>
+    `<div class="opt${show ? (o === cell.a ? " correct" : " wrong") : ""}"><b>${"ABCD"[i]}</b>${esc(o)}</div>`).join("") : "";
+  $("#qOpts").style.display = cell.opts ? "" : "none";
+  $("#qAnswer").innerHTML = show ? `<div class="answer"><span class="lbl">Lösung</span>${esc(cell.a)}</div>` : "";
+
+  let ctl = "";
+  if (cell.done) {
+    const t = teamById(cell.by);
+    ctl = `<p class="buzz-msg" style="background:${t ? t.color : "var(--muted)"}">${t ? `✓ +${val} für ${esc(t.name)}` : "Keine Punkte vergeben"}</p>
+      <button class="btn btn-primary btn-big" data-act="toBoard">Weiter zum Spielfeld ▸</button>`;
+  } else if (qz.mode === "buzzer" && qv.buzzed) {
+    const t = teamById(qv.buzzed);
+    ctl = `<p class="buzz-msg" style="background:${t.color}">🔔 ${esc(t.name)} antwortet!</p>
+      <div class="btn-row"><button class="btn btn-primary" data-act="buzzRight">✓ Richtig (+${val})</button>
+      <button class="btn btn-danger" data-act="buzzWrong">✗ Falsch – andere Teams</button>
+      ${show ? "" : `<button class="btn btn-ghost" data-act="reveal">Lösung zeigen</button>`}</div>`;
+  } else {
+    const turnId = quizTurnTeamId();
+    const teamsHtml = S.teams.map((t) => `<button class="team-btn${t.id === turnId ? " first" : ""}" style="background:${t.color}" data-act="award" data-id="${t.id}" ${qv.locked.has(t.id) ? "disabled" : ""}>${esc(t.name)} +${val}</button>`).join("");
+    if (!show) {
+      const msg = qz.mode === "buzzer" ? (qv.locked.size >= S.teams.length ? "Alle Teams haben es versucht." : "Wer weiss es? Buzzer drücken!") : (turnId ? `${esc(teamById(turnId).name)} antwortet` : "");
+      ctl = `${msg ? `<p class="muted" style="font-size:1.2rem;font-weight:700;margin:0">${msg}</p>` : ""}
+        <button class="btn btn-primary btn-big" data-act="reveal">Lösung zeigen</button>`;
+    } else {
+      ctl = `<div class="award"><span class="lbl">Punkte für:</span>${teamsHtml}<button class="btn" data-act="award" data-id="">Niemand</button></div>`;
+    }
+  }
+  $("#qControls").innerHTML = ctl;
+  if (!$("#buzzers").hidden) renderBuzzers();
+}
+function quizAward(teamId) {
+  const qz = S.quiz, { r, c } = qz.open, cell = qz.cells[r][c];
+  if (cell.done) return;
+  stopCountdown();
+  cell.done = true; cell.by = teamId || null;
+  const val = (r + 1) * 100;
+  if (teamId) { const t = teamById(teamId); if (t) t.score += val; beep(988, 0.12, "triangle"); setTimeout(() => beep(1319, 0.2, "triangle"), 110); }
+  qz.turn = (qz.turn + 1) % Math.max(1, S.teams.length);
+  qv.revealed = true;
+  save();
+  hideBuzzers();
+  $("#qCountdownWrap").innerHTML = "";
+  renderScorebars(teamId);
+  renderQuestionDynamic();
+}
+function quizReopen(r, c) {
+  const qz = S.quiz, cell = qz.cells[r][c], t = teamById(cell.by), val = (r + 1) * 100;
+  openModal(`<h2>Frage nochmals öffnen?</h2><p>${t ? `Die ${val} Punkte von <b>${esc(t.name)}</b> werden wieder abgezogen.` : "Bisher hat niemand Punkte für diese Frage erhalten."}</p>
+    <div class="btn-row"><button class="btn" data-act="closeModal">Abbrechen</button><button class="btn btn-primary" data-act="cellReopenYes" data-r="${r}" data-c="${c}">Öffnen</button></div>`);
+}
+function quizEnd() {
+  if (S.quiz) { S.quiz.finished = true; save(); }
+  if (lessonActive() && S.quiz && S.quiz.phase === S.lesson.idx) nextPhase();
+  else showView("podium");
+}
+
+/* Buzzer: pointerdown pro Finger (mehrere Teams gleichzeitig), Tastatur 1–6 */
+function showBuzzers() { $("#buzzers").hidden = false; renderBuzzers(); }
+function hideBuzzers() { $("#buzzers").hidden = true; }
+function renderBuzzers() {
+  const box = $("#buzzers");
+  box.style.setProperty("--n", S.teams.length);
+  box.innerHTML = S.teams.map((t, i) =>
+    `<button class="buzzer${qv.locked.has(t.id) || (qv.buzzed && qv.buzzed !== t.id) ? " locked" : ""}${qv.buzzed === t.id ? " winner" : ""}" style="background:${t.color}" data-buzz="${t.id}">${esc(t.name)}<kbd>Taste ${i + 1}</kbd></button>`).join("");
+}
+function buzz(teamId) {
+  if (currentView !== "question" || !S.quiz || $("#buzzers").hidden) return;
+  if (qv.buzzed || qv.locked.has(teamId)) return;
+  qv.buzzed = teamId;
+  stopCountdown();
+  beep(660, 0.25, "sawtooth", 0.15);
+  renderQuestionDynamic();
+}
+$("#buzzers").addEventListener("pointerdown", (e) => {
+  const b = e.target.closest("[data-buzz]"); if (!b) return;
+  e.preventDefault();
+  buzz(b.dataset.buzz);
+});
+document.addEventListener("keydown", (e) => {
+  if (e.target.closest && e.target.closest("input, textarea")) return;
+  if (e.key === "Escape" && !$("#modal").hidden) { closeModal(); return; }
+  if (currentView === "question" && /^[1-6]$/.test(e.key)) {
+    const t = S.teams[Number(e.key) - 1]; if (t) buzz(t.id);
+  }
+});
+
+/* =====================================================================
+   Schätzduell
+   ===================================================================== */
+let esCfg = { n: 5, timer: 60, phase: null };
+function estSetupPrefill(o) { esCfg.n = o.n || esCfg.n; esCfg.phase = o.phase ?? null; }
+RENDER.estSetup = function () {
+  $("#esN").innerHTML = [3, 4, 5, 8].map((n) => `<button class="chip${esCfg.n === n ? " on" : ""}" data-act="esN" data-v="${n}">${n} Fragen</button>`).join("");
+  $("#esTimer").innerHTML = [[0, "Aus"], [45, "45 s"], [60, "60 s"], [90, "90 s"]].map(([v, l]) =>
+    `<button class="chip${esCfg.timer === v ? " on" : ""}" data-act="esTimer" data-v="${v}">${l}</button>`).join("");
+};
+function estCreate() {
+  const usedSet = new Set(S.usedEst);
+  let pool = shuffle(EST.map((_, i) => i).filter((i) => !usedSet.has(i)));
+  if (pool.length < esCfg.n) { S.usedEst = []; pool = pool.concat(shuffle(EST.map((_, i) => i).filter((i) => !pool.includes(i)))); }
+  const qs = pool.slice(0, esCfg.n);
+  S.usedEst = S.usedEst.concat(qs).slice(-EST.length + 1);
+  S.est = { qs, i: 0, guesses: {}, revealed: false, results: null, timer: esCfg.timer, finished: false, phase: esCfg.phase };
+  save();
+  viewStack = viewStack.filter((v) => v !== "estSetup");
+  showView("est", { noPush: true });
+}
+function estFmt(item, v) { return item[4] ? fmtYear(v) : fmt(v); }
+RENDER.est = function () {
+  const e = S.est;
+  if (!e) { showView("home", { noPush: true }); return; }
+  const item = EST[e.qs[e.i]];
+  const [q, a, unit, info] = item;
+  $("#estTitle").textContent = `📏 Schätzduell · Frage ${e.i + 1} von ${e.qs.length}`;
+  let html = `<p class="q-text">${esc(q)}</p>`;
+  html += `<p class="unit-hint">${unit ? `Antwort in: <b>${esc(unit)}</b>` : item[4] ? "Antwort: eine Jahreszahl" : "Antwort: eine Zahl"}</p>`;
+  if (!e.revealed) {
+    html += `<div class="guess-grid">${S.teams.map((t) => `<div class="guess" style="background:${t.color}">
+        <label for="g-${t.id}">${esc(t.name)}</label>
+        <input id="g-${t.id}" inputmode="decimal" autocomplete="off" data-guess="${t.id}" value="${esc(e.guesses[t.id] || "")}" placeholder="Schätzung"></div>`).join("")}</div>`;
+    if (e.timer) html += countdownHtml("estCountdown", e.timer);
+    html += `<div class="q-controls"><button class="btn btn-primary btn-big" data-act="estReveal">Auflösen</button></div>`;
+  } else {
+    html += `<div class="answer"><span class="lbl">Richtige Antwort</span>${estFmt(item, a)} ${esc(unit)}</div>`;
+    if (info) html += `<p class="info-box">💡 ${esc(info)}</p>`;
+    html += numberLine(item, e.results);
+    html += `<div class="result-list">${e.results.map((x) => {
+      const t = teamById(x.id); if (!t) return "";
+      return `<div class="result-row"><span class="rk">${x.rank + 1}.</span>
+        <span class="nm"><span class="team-dot" style="background:${t.color}"></span>${esc(t.name)}</span>
+        <span class="gv">${estFmt(item, x.g)} (${x.diff === 0 ? "genau!" : "± " + estFmt(item, round6(x.diff))})</span>
+        <span class="pt">${x.pts + x.bonus ? "+" + (x.pts + x.bonus) : "–"}${x.bonus ? " 🎯" : ""}</span></div>`;
+    }).join("")}</div>`;
+    const last = e.i + 1 >= e.qs.length;
+    html += `<div class="q-controls">${last
+      ? (lessonActive() && e.phase === S.lesson.idx
+        ? `<button class="btn btn-primary btn-big" data-act="estFinish">Fertig · Nächste Phase ▸</button>`
+        : `<button class="btn btn-primary btn-big" data-act="estFinish">🏆 Zur Rangliste</button>`)
+      : `<button class="btn btn-primary btn-big" data-act="estNext">Nächste Frage ▸</button>`}</div>`;
+  }
+  $("#estCard").innerHTML = html;
+  if (!e.revealed && e.timer) startCountdown(e.timer, "estCountdown", () => toast("Zeit um! Schätzungen eintippen."));
+};
+function estReveal() {
+  const e = S.est, item = EST[e.qs[e.i]], a = item[1];
+  const rows = S.teams.map((t) => ({ id: t.id, g: parseNum(e.guesses[t.id]) })).filter((x) => x.g !== null);
+  if (!rows.length) { toast("Bitte mindestens eine Schätzung eintippen."); return; }
+  stopCountdown();
+  rows.forEach((x) => { x.diff = Math.abs(x.g - a); });
+  rows.sort((x, y) => x.diff - y.diff);
+  const distinct = [...new Set(rows.map((x) => x.diff))];
+  rows.forEach((x) => {
+    x.rank = distinct.indexOf(x.diff);
+    x.pts = [300, 200, 100][x.rank] || 0;
+    x.bonus = x.diff <= Math.abs(a) * 0.01 ? 100 : 0;
+    const t = teamById(x.id); if (t) t.score += x.pts + x.bonus;
+  });
+  e.results = rows; e.revealed = true;
+  save();
+  fanfare();
+  showView("est", { noPush: true });
+}
+function numberLine(item, results) {
+  const a = item[1];
+  const vals = results.map((x) => x.g).concat([a]);
+  let lo = Math.min(...vals), hi = Math.max(...vals);
+  if (hi === lo) { lo -= 1; hi += 1; }
+  const pad = (hi - lo) * 0.06; lo -= pad; hi += pad;
+  const X = (v) => 30 + (v - lo) / (hi - lo) * 940;
+  const sorted = results.slice().sort((p, q) => p.g - q.g);
+  let marks = "";
+  sorted.forEach((x, i) => {
+    const t = teamById(x.id); if (!t) return;
+    const y = i % 2 ? 22 : 48;
+    marks += `<line x1="${X(x.g)}" y1="${y + 8}" x2="${X(x.g)}" y2="86" stroke="${t.color}" stroke-width="2"/>
+      <circle cx="${X(x.g)}" cy="90" r="9" fill="${t.color}"/>
+      <text x="${X(x.g)}" y="${y}" text-anchor="middle" font-size="18" font-weight="700" fill="${t.color}">${esc(t.name)}</text>`;
+  });
+  return `<svg class="numline" viewBox="0 0 1000 150" role="img" aria-label="Zahlenstrahl mit allen Schätzungen">
+    <line x1="20" y1="90" x2="980" y2="90" stroke="currentColor" stroke-opacity="0.35" stroke-width="3"/>
+    ${marks}
+    <line x1="${X(a)}" y1="70" x2="${X(a)}" y2="112" style="stroke:var(--success)" stroke-width="5"/>
+    <text x="${clamp(X(a), 60, 940)}" y="138" text-anchor="middle" font-size="20" font-weight="800" style="fill:var(--success)">✓ ${estFmt(item, a)}</text>
+  </svg>`;
+}
+function estFinish() {
+  const e = S.est; if (e) { e.finished = true; save(); }
+  if (lessonActive() && e && e.phase === S.lesson.idx) nextPhase();
+  else showView("podium");
+}
+
+/* =====================================================================
+   Gemeinsam für Kurzformate: Ende → nächste Lektionsphase oder Rangliste
+   ===================================================================== */
+function finishFormat(key) {
+  const g = S[key];
+  if (g) { g.finished = true; save(); }
+  if (lessonActive() && g && g.phase === S.lesson.idx) nextPhase();
+  else showView("podium");
+}
+function finishLabel(g) {
+  return lessonActive() && g.phase === S.lesson.idx ? "Fertig · Nächste Phase ▸" : "🏆 Zur Rangliste";
+}
+function pickUnused(list, usedKey, count, scoreFn) {
+  const used = new Set(S[usedKey]);
+  let idx = list.map((_, i) => i).filter((i) => !used.has(i));
+  if (idx.length < count) { S[usedKey] = []; idx = list.map((_, i) => i); }
+  idx = shuffle(idx);
+  if (scoreFn) idx.sort((a, b) => scoreFn(a) - scoreFn(b));
+  const out = idx.slice(0, count);
+  S[usedKey] = S[usedKey].concat(out);
+  return out;
+}
+
+/* =====================================================================
+   Themen-Breakout
+   ===================================================================== */
+let boCfg = { topic: "erfinder", dur: 30, phase: null };
+function boPresMin(T) { return T.presMin * S.teams.length; }
+function boBuildPhases(T, dur) {
+  const pres = boPresMin(T), vote = 3;
+  const work = Math.max(T.phases.length * 2, Math.round(dur - pres - vote));
+  const wsum = T.phases.reduce((s, p) => s + p.w, 0);
+  const phases = T.phases.map((p) => ({ kind: "work", t: p.t, text: p.text, min: Math.max(2, Math.round(work * p.w / wsum)) }));
+  phases.push({ kind: "present", t: "Präsentationen", min: pres });
+  phases.push({ kind: "vote", t: "Abstimmung", min: vote });
+  return phases;
+}
+RENDER.boSetup = function () {
+  $("#boTopics").innerHTML = BREAKOUTS.map((T) => `<button class="topic${boCfg.topic === T.id ? " on" : ""}" data-act="boTopic" data-v="${T.id}">
+    <div class="ic">${T.icon}</div><h3>${T.title}</h3><p>${T.short}</p></button>`).join("");
+  $("#boDur").innerHTML = [20, 30, 45].map((d) => `<button class="chip${boCfg.dur === d ? " on" : ""}" data-act="boDur" data-v="${d}">${d} Minuten</button>`).join("");
+  const T = BO_BY_ID[boCfg.topic], ph = boBuildPhases(T, boCfg.dur);
+  $("#boDurHint").textContent = "Ablauf: " + ph.map((p) => `${p.t} ${fmt(p.min)}′`).join(" → ");
+};
+function boCreate() {
+  const T = BO_BY_ID[boCfg.topic];
+  const assign = {};
+  let statement = null;
+  if (T.debate) {
+    statement = pick(T.statements);
+    S.teams.forEach((t, i) => { assign[t.id] = i % 2 ? "CONTRA (dagegen)" : "PRO (dafür)"; });
+  } else {
+    const vs = shuffle(T.variants);
+    S.teams.forEach((t, i) => { assign[t.id] = vs[i % vs.length]; });
+  }
+  S.bo = { topic: T.id, statement, assign, phases: boBuildPhases(T, boCfg.dur), idx: 0, endAt: null, pres: 0, votes: {}, voted: false, finished: false, phase: boCfg.phase };
+  save();
+  viewStack = viewStack.filter((v) => v !== "boSetup");
+  showView("breakout", { noPush: true });
+}
+function boPresOrder() {
+  // Debatte: PRO und CONTRA abwechselnd (Teams 1, 2, 3 … sind schon abwechselnd zugeteilt)
+  return S.teams.map((t) => t.id);
+}
+RENDER.breakout = function () {
+  const b = S.bo;
+  if (!b) { showView("home", { noPush: true }); return; }
+  const T = BO_BY_ID[b.topic], ph = b.phases[b.idx];
+  $("#boTitle").textContent = `${T.icon} ${T.title}`;
+
+  let html = `<div class="card">`;
+  if (b.statement) html += `<p class="big-prompt" style="margin:4px 0 12px;font-size:clamp(1.3rem,3.4vw,2.4rem)">«${esc(b.statement)}»</p>`;
+  html += `<p style="font-size:clamp(1.05rem,2vw,1.35rem);margin:0">${esc(T.auftrag)}</p>`;
+  if (T.list) html += `<div class="list-box">Zur Auswahl: ${esc(T.list)}</div>`;
+  html += `<div class="assign-grid">${S.teams.map((t) => `<div class="assign" style="background:${t.color}"><b>${esc(t.name)} · ${esc(T.variantLabel)}</b><span>${esc(b.assign[t.id] || "–")}</span></div>`).join("")}</div></div>`;
+
+  html += `<div class="phase-steps">${b.phases.map((p, i) => `<span class="phase-step${i === b.idx ? " on" : i < b.idx ? " done" : ""}">${i + 1}. ${esc(p.t)}</span>`).join("")}</div>`;
+
+  html += `<div class="q-card">`;
+  const last = b.idx + 1 >= b.phases.length;
+  if (ph.kind === "work") {
+    html += `<h2 style="font-size:1.6rem">${esc(ph.t)}</h2><p style="font-size:1.25rem;margin:0">${esc(ph.text)}</p>`;
+    html += b.endAt ? `<div class="big-timer">${countdownHtml("boCountdown", ph.min * 60)}</div>`
+      : `<div class="q-controls"><button class="btn btn-primary btn-big" data-act="boStart">▶ ${fmt(ph.min)} Minuten starten</button></div>`;
+    html += `<div class="q-controls"><button class="btn${b.endAt ? " btn-primary" : ""}" data-act="boNext">Nächste Phase ▸</button></div>`;
+  } else if (ph.kind === "present") {
+    const order = boPresOrder(), t = teamById(order[b.pres]);
+    html += `<h2 style="font-size:1.6rem">${esc(ph.t)}</h2>`;
+    if (t) {
+      html += `<p class="buzz-msg" style="background:${t.color}">${esc(t.name)}: ${esc(b.assign[t.id] || "")}</p>
+        <p class="muted" style="margin:8px 0 0">Team ${b.pres + 1} von ${order.length} · je ${fmt(T.presMin)} Minute${T.presMin === 1 ? "" : "n"}</p>`;
+      html += b.endAt ? `<div class="big-timer">${countdownHtml("boCountdown", T.presMin * 60)}</div>`
+        : `<div class="q-controls"><button class="btn btn-primary btn-big" data-act="boStart">▶ ${esc(T.presLabel)} starten</button></div>`;
+    }
+    html += `<div class="q-controls"><button class="btn${b.endAt ? " btn-primary" : ""}" data-act="boPresNext">${b.pres + 1 < order.length ? "Nächstes Team ▸" : "Zur Abstimmung ▸"}</button></div>`;
+  } else {
+    html += `<h2 style="font-size:1.6rem">Abstimmung</h2>
+      <p style="font-size:1.15rem;margin:0">Jedes Team gibt <b>eine Stimme</b> für ein anderes Team ab, nicht für sich selbst. Achtet auf: <b>${esc(T.criteria)}</b></p>`;
+    if (!b.voted) {
+      html += `<div class="team-judge">${S.teams.map((t) => `<div class="judge" style="background:${t.color}"><span class="nm">${esc(t.name)}</span>
+        <button data-act="boVote" data-id="${t.id}" data-d="-1" aria-label="Stimme weniger">−</button>
+        <span style="min-width:28px;text-align:center;font-size:1.3rem">${b.votes[t.id] || 0}</span>
+        <button data-act="boVote" data-id="${t.id}" data-d="1" aria-label="Stimme mehr">+</button></div>`).join("")}</div>
+        <p class="hint">Punkte: 100 fürs Mitmachen, dazu 100 pro Stimme.</p>
+        <div class="q-controls"><button class="btn btn-primary btn-big" data-act="boAward">Punkte vergeben</button></div>`;
+    } else {
+      html += `<div class="result-list">${S.teams.slice().sort((x, y) => (b.votes[y.id] || 0) - (b.votes[x.id] || 0)).map((t) =>
+        `<div class="result-row"><span class="rk">${b.votes[t.id] || 0}</span><span class="nm"><span class="team-dot" style="background:${t.color}"></span>${esc(t.name)}</span><span class="gv">Stimmen</span><span class="pt">+${100 + 100 * (b.votes[t.id] || 0)}</span></div>`).join("")}</div>
+        <div class="q-controls"><button class="btn btn-primary btn-big" data-act="boFinish">${finishLabel(b)}</button></div>`;
+    }
+  }
+  html += `</div>`;
+  $("#boBody").innerHTML = html;
+  if (b.endAt && $("#boCountdown")) {
+    const total = (ph.kind === "present" ? T.presMin : ph.min) * 60;
+    startCountdown(total, "boCountdown", () => toast("Zeit um!"), b.endAt);
+  }
+};
+function boStart() {
+  const b = S.bo, T = BO_BY_ID[b.topic], ph = b.phases[b.idx];
+  b.endAt = Date.now() + (ph.kind === "present" ? T.presMin : ph.min) * 60000;
+  save(); RENDER.breakout();
+}
+function boNext() { const b = S.bo; b.idx = Math.min(b.idx + 1, b.phases.length - 1); b.endAt = null; b.pres = 0; save(); stopCountdown(); RENDER.breakout(); window.scrollTo(0, 0); }
+function boPresNext() {
+  const b = S.bo; stopCountdown(); b.endAt = null;
+  if (b.pres + 1 < S.teams.length) { b.pres++; save(); RENDER.breakout(); } else boNext();
+}
+function boAward(force) {
+  const b = S.bo;
+  const total = Object.values(b.votes).reduce((s, v) => s + v, 0);
+  if (total === 0 && force !== true) {
+    openModal(`<h2>Noch keine Stimmen</h2><p>Mit + und − die Stimmen pro Team eintragen. Oder nur die Teilnahme-Punkte (100 pro Team) vergeben?</p>
+      <div class="btn-row"><button class="btn" data-act="closeModal">Stimmen eintragen</button><button class="btn btn-primary" data-act="boAwardYes">Nur Teilnahme</button></div>`);
+    return;
+  }
+  S.teams.forEach((t) => { t.score += 100 + 100 * (b.votes[t.id] || 0); });
+  b.voted = true; save(); fanfare(); renderScorebars(); RENDER.breakout();
+}
+
+/* =====================================================================
+   Begriffe raten (eine Person mit dem Rücken zur Leinwand, das Team erklärt)
+   ===================================================================== */
+let wsCfg = { mode: "explain", sec: 60, rounds: 1, phase: null };
+const WORD_MODES = { explain: "🗣️ Erklären", panto: "🤸 Pantomime", alt: "🔁 Abwechselnd" };
+function wordsRoundsFor(min) { return Math.max(1, Math.floor(min / (S.teams.length * 1.6))); }
+function wordsCreate() {
+  S.words = { mode: wsCfg.mode, sec: wsCfg.sec, total: wsCfg.rounds * S.teams.length, turn: 0, cur: null, finished: false, phase: wsCfg.phase };
+  save();
+  viewStack = viewStack.filter((v) => v !== "wordsSetup");
+  showView("words", { noPush: true });
+}
+function wordsTurnMode(w) { return w.mode === "alt" ? (w.turn % 2 ? "panto" : "explain") : w.mode; }
+function nextWord() {
+  const wts = WORD_WEIGHTS[S.stufe] || WORD_WEIGHTS[8];
+  let r = Math.random(), lvl = 1;
+  if (r > wts[0]) lvl = r > wts[0] + wts[1] ? 3 : 2;
+  const used = new Set(S.usedWords);
+  let pool = WORDS[lvl].filter((w) => !used.has(w));
+  if (!pool.length) { S.usedWords = S.usedWords.filter((w) => !WORDS[lvl].includes(w)); pool = WORDS[lvl].slice(); }
+  const w = pick(pool);
+  S.usedWords.push(w);
+  return w;
+}
+RENDER.wordsSetup = function () {
+  $("#wsMode").innerHTML = Object.entries(WORD_MODES).map(([v, l]) => `<button class="chip${wsCfg.mode === v ? " on" : ""}" data-act="wsMode" data-v="${v}">${l}</button>`).join("");
+  $("#wsSec").innerHTML = [45, 60, 90].map((v) => `<button class="chip${wsCfg.sec === v ? " on" : ""}" data-act="wsSec" data-v="${v}">${v} s</button>`).join("");
+  $("#wsRounds").innerHTML = [1, 2, 3].map((v) => `<button class="chip${wsCfg.rounds === v ? " on" : ""}" data-act="wsRounds" data-v="${v}">${v} pro Team</button>`).join("");
+};
+RENDER.words = function () {
+  const w = S.words;
+  if (!w) { showView("home", { noPush: true }); return; }
+  if (w.cur && !w.cur.done && w.cur.endAt <= Date.now()) { wordsEndTurn(); return; }
+  const team = S.teams[w.turn % S.teams.length];
+  const mode = wordsTurnMode(w);
+  $("#wordsTitle").textContent = `🗣️ Begriffe raten · Runde ${w.cur && w.cur.done ? w.turn : Math.min(w.turn + 1, w.total)} von ${w.total}`;
+  let html = "";
+  if (!w.cur) {
+    html = `<p class="buzz-msg" style="background:${team.color}">${esc(team.name)} ist dran</p>
+      <ol class="rules" style="margin:18px 0 0">
+        <li>Eine Person aus dem Team stellt sich vorne hin, <b>mit dem Rücken zur Leinwand</b>.</li>
+        <li>${mode === "panto" ? "Das Team spielt die Begriffe <b>ohne Worte</b> vor (Pantomime)." : "Das Team erklärt die Begriffe, <b>ohne das Wort oder Teile davon</b> zu sagen."}</li>
+        <li>Alle anderen Teams sind still. Wer verrät, macht dem eigenen Team Minuspunkte.</li>
+        <li>Pro erratenem Begriff gibt es <b>100 Punkte</b>. Überspringen ist erlaubt.</li>
+      </ol>
+      <div class="q-controls"><button class="btn btn-primary btn-big" data-act="wordsStart">▶ Start (${w.sec} s)</button></div>`;
+  } else if (!w.cur.done) {
+    html = `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <span class="pill" style="background:${team.color};color:#fff;border-color:transparent">${esc(team.name)} · ${mode === "panto" ? "Pantomime" : "Erklären"}</span>
+        <span class="pill">✓ ${w.cur.list.filter((x) => x.ok).length}</span></div>
+      <p class="word-big">${esc(w.cur.word)}</p>
+      <div class="big-timer">${countdownHtml("wordsCountdown", w.sec)}</div>
+      <div class="grid2" style="margin-top:16px">
+        <button class="btn btn-primary btn-big" style="background:var(--success);border-color:var(--success)" data-act="wordsOk">✓ Erraten</button>
+        <button class="btn btn-big" data-act="wordsSkip">⏭ Überspringen</button>
+      </div>`;
+  } else {
+    const ok = w.cur.list.filter((x) => x.ok).length;
+    const last = w.turn >= w.total;
+    html = `<p class="buzz-msg" style="background:${team ? teamById(w.cur.teamId).color : "var(--muted)"}">${esc(teamById(w.cur.teamId).name)}: ${ok} Begriff${ok === 1 ? "" : "e"} erraten (+${ok * 100})</p>
+      <div class="word-list">${w.cur.list.map((x) => `<span class="${x.ok ? "ok" : "skip"}">${x.ok ? "✓ " : ""}${esc(x.w)}</span>`).join("")}</div>
+      <div class="q-controls">${last
+        ? `<button class="btn btn-primary btn-big" data-act="wordsFinish">${finishLabel(w)}</button>`
+        : `<button class="btn btn-primary btn-big" data-act="wordsNextTeam">Nächstes Team: ${esc(S.teams[w.turn % S.teams.length].name)} ▸</button>`}</div>`;
+  }
+  $("#wordsCard").innerHTML = html;
+  if (w.cur && !w.cur.done) startCountdown(w.sec, "wordsCountdown", wordsEndTurn, w.cur.endAt);
+};
+function wordsStart() {
+  const w = S.words, team = S.teams[w.turn % S.teams.length];
+  w.cur = { teamId: team.id, endAt: Date.now() + w.sec * 1000, list: [], word: nextWord(), done: false };
+  save(); RENDER.words();
+}
+function wordsAnswer(ok) {
+  const w = S.words; if (!w.cur || w.cur.done) return;
+  w.cur.list.push({ w: w.cur.word, ok });
+  if (ok) beep(988, 0.1, "triangle"); else beep(330, 0.08, "sine", 0.1);
+  w.cur.word = nextWord();
+  save();
+  $(".word-big").textContent = w.cur.word;
+  const pills = $$("#wordsCard .pill"); if (pills[1]) pills[1].textContent = "✓ " + w.cur.list.filter((x) => x.ok).length;
+}
+function wordsEndTurn() {
+  const w = S.words; if (!w || !w.cur || w.cur.done) return;
+  stopCountdown();
+  w.cur.done = true;
+  const ok = w.cur.list.filter((x) => x.ok).length;
+  addScore(w.cur.teamId, ok * 100);
+  w.turn++;
+  save();
+  if (currentView === "words") { beep(440, 0.5, "square", 0.12); RENDER.words(); }
+}
+
+/* =====================================================================
+   Wer bin ich? (bis zu 5 Hinweise, je früher richtig, desto mehr Punkte)
+   ===================================================================== */
+let whoCfg = { n: 4, phase: null };
+function whoCreate() {
+  const qs = pickUnused(WHO, "usedWho", whoCfg.n);
+  S.who = { qs, i: 0, clue: 1, out: [], solvedBy: null, revealed: false, finished: false, phase: whoCfg.phase };
+  save();
+  viewStack = viewStack.filter((v) => v !== "whoSetup");
+  showView("who", { noPush: true });
+}
+RENDER.whoSetup = function () {
+  $("#whoN").innerHTML = [3, 4, 5, 8].map((n) => `<button class="chip${whoCfg.n === n ? " on" : ""}" data-act="whoN" data-v="${n}">${n} Rätsel</button>`).join("");
+};
+RENDER.who = function () {
+  const g = S.who;
+  if (!g) { showView("home", { noPush: true }); return; }
+  const [cat, sol, clues] = WHO[g.qs[g.i]];
+  const pts = (6 - g.clue) * 100;
+  $("#whoTitle").textContent = `🕵️ Wer bin ich? · Rätsel ${g.i + 1} von ${g.qs.length}`;
+  let html = `<div class="q-head"><span class="pill">${esc(cat)}</span>${g.revealed ? "" : `<span class="pill pill-strong">Jetzt: ${pts} Punkte</span>`}</div>
+    <p class="q-text">Wer oder was bin ich?</p>
+    <ol class="clues">${clues.slice(0, g.revealed ? 5 : g.clue).map((c, i) => `<li class="${i === g.clue - 1 && !g.revealed ? "new" : ""}"><span class="n">${i + 1}.</span>${esc(c)}</li>`).join("")}</ol>`;
+  if (!g.revealed) {
+    html += `<p class="hint" style="font-size:1rem">Weiss ein Team die Lösung, meldet es sich. Richtig: Punkte. Falsch: Das Team ist für dieses Rätsel draussen.</p>
+      <div class="team-judge">${S.teams.map((t) => {
+        const out = g.out.includes(t.id);
+        return `<div class="judge${out ? " out" : ""}" style="background:${t.color}"><span class="nm">${esc(t.name)}</span>
+          <button data-act="whoRight" data-id="${t.id}" ${out ? "disabled" : ""} aria-label="${esc(t.name)} richtig">✓</button>
+          <button data-act="whoWrong" data-id="${t.id}" ${out ? "disabled" : ""} aria-label="${esc(t.name)} falsch">✗</button></div>`;
+      }).join("")}</div>
+      <div class="q-controls btn-row" style="flex-direction:row">
+        ${g.clue < 5 ? `<button class="btn btn-primary" style="flex:1" data-act="whoClue">Nächster Hinweis ▸</button>` : ""}
+        <button class="btn" data-act="whoReveal">Auflösen</button></div>`;
+  } else {
+    const t = teamById(g.solvedBy);
+    html += `<div class="answer"><span class="lbl">Lösung</span>${esc(sol)}</div>`;
+    html += t ? `<p class="buzz-msg" style="background:${t.color};margin-top:12px">✓ +${(6 - g.clue) * 100} für ${esc(t.name)}</p>` : "";
+    const last = g.i + 1 >= g.qs.length;
+    html += `<div class="q-controls">${last ? `<button class="btn btn-primary btn-big" data-act="whoFinish">${finishLabel(g)}</button>`
+      : `<button class="btn btn-primary btn-big" data-act="whoNext">Nächstes Rätsel ▸</button>`}</div>`;
+  }
+  $("#whoCard").innerHTML = html;
+};
+
+/* =====================================================================
+   Logikrätsel (alle Teams gleichzeitig auf Papier)
+   ===================================================================== */
+let lgCfg = { n: 3, timer: 120, phase: null };
+function logicCreate() {
+  const target = ({ 7: 2, 8: 3, 9: 4 })[S.stufe] || 3;
+  const qs = pickUnused(LOGIC, "usedLogic", lgCfg.n, (i) => Math.abs(LOGIC[i][0] - target) + Math.random() * 2.5);
+  qs.sort((a, b) => LOGIC[a][0] - LOGIC[b][0]);
+  S.logic = { qs, i: 0, revealed: false, correct: [], timer: lgCfg.timer, endAt: lgCfg.timer ? Date.now() + lgCfg.timer * 1000 : null, finished: false, phase: lgCfg.phase };
+  save();
+  viewStack = viewStack.filter((v) => v !== "logicSetup");
+  showView("logic", { noPush: true });
+}
+RENDER.logicSetup = function () {
+  $("#lgN").innerHTML = [3, 5, 8].map((n) => `<button class="chip${lgCfg.n === n ? " on" : ""}" data-act="lgN" data-v="${n}">${n} Rätsel</button>`).join("");
+  $("#lgTimer").innerHTML = [[0, "Aus"], [60, "1 Min."], [120, "2 Min."], [180, "3 Min."]].map(([v, l]) =>
+    `<button class="chip${lgCfg.timer === v ? " on" : ""}" data-act="lgTimer" data-v="${v}">${l}</button>`).join("");
+};
+RENDER.logic = function () {
+  const g = S.logic;
+  if (!g) { showView("home", { noPush: true }); return; }
+  const [lvl, q, a, expl] = LOGIC[g.qs[g.i]];
+  $("#logicTitle").textContent = `🧠 Logikrätsel · ${g.i + 1} von ${g.qs.length}`;
+  let html = `<div class="q-head"><span class="pill">${"★".repeat(lvl)}${"☆".repeat(5 - lvl)}</span><span class="pill pill-strong">${lvl * 100} Punkte</span></div>
+    <p class="q-text">${esc(q)}</p>`;
+  if (!g.revealed) {
+    if (g.timer) html += `<div class="big-timer">${countdownHtml("logicCountdown", g.timer)}</div>`;
+    html += `<p class="hint" style="font-size:1rem">Jedes Team schreibt seine Lösung auf ein Blatt.</p>
+      <div class="q-controls"><button class="btn btn-primary btn-big" data-act="logicReveal">Lösung zeigen</button></div>`;
+  } else {
+    html += `<div class="answer"><span class="lbl">Lösung</span>${esc(a)}</div><p class="info-box">💡 ${esc(expl)}</p>
+      <span class="field-label">Welche Teams haben es richtig?</span>
+      <div class="award">${S.teams.map((t) => `<button class="team-btn toggle-team${g.correct.includes(t.id) ? " on" : ""}" style="background:${t.color}" data-act="logicToggle" data-id="${t.id}" aria-pressed="${g.correct.includes(t.id)}">${g.correct.includes(t.id) ? "✓ " : ""}${esc(t.name)}</button>`).join("")}</div>
+      <div class="q-controls"><button class="btn btn-primary btn-big" data-act="logicAward">${g.correct.length ? `+${lvl * 100} vergeben und ` : ""}${g.i + 1 >= g.qs.length ? "fertig" : "weiter"} ▸</button></div>`;
+  }
+  $("#logicCard").innerHTML = html;
+  if (!g.revealed && g.timer && g.endAt) startCountdown(g.timer, "logicCountdown", () => toast("Zeit um! Stifte weg."), g.endAt);
+};
+function logicAward() {
+  const g = S.logic, lvl = LOGIC[g.qs[g.i]][0];
+  g.correct.forEach((id) => { const t = teamById(id); if (t) t.score += lvl * 100; });
+  if (g.correct.length) beep(988, 0.12, "triangle");
+  if (g.i + 1 >= g.qs.length) { save(); finishFormat("logic"); return; }
+  g.i++; g.revealed = false; g.correct = []; g.endAt = g.timer ? Date.now() + g.timer * 1000 : null;
+  save(); showView("logic", { noPush: true });
+}
+
+const FORMAT_ACTIONS = {
+  openBoSetup: () => { if (S.bo && !S.bo.finished) { showView("breakout"); return; } boCfg.phase = null; showView("boSetup"); },
+  boTopic: (b) => { boCfg.topic = b.dataset.v; RENDER.boSetup(); },
+  boDur: (b) => { boCfg.dur = Number(b.dataset.v); RENDER.boSetup(); },
+  boCreate,
+  boStart,
+  boNext,
+  boPresNext,
+  boVote: (b) => { const v = S.bo.votes; v[b.dataset.id] = Math.max(0, (v[b.dataset.id] || 0) + Number(b.dataset.d)); save(); RENDER.breakout(); },
+  boAward: () => boAward(),
+  boAwardYes: () => { closeModal(); boAward(true); },
+  boFinish: () => finishFormat("bo"),
+  toBreakout: () => showView("breakout"),
+
+  openWordsSetup: () => { if (S.words && !S.words.finished) { showView("words"); return; } wsCfg.phase = null; showView("wordsSetup"); },
+  wsMode: (b) => { wsCfg.mode = b.dataset.v; RENDER.wordsSetup(); },
+  wsSec: (b) => { wsCfg.sec = Number(b.dataset.v); RENDER.wordsSetup(); },
+  wsRounds: (b) => { wsCfg.rounds = Number(b.dataset.v); RENDER.wordsSetup(); },
+  wordsCreate,
+  wordsStart,
+  wordsOk: () => wordsAnswer(true),
+  wordsSkip: () => wordsAnswer(false),
+  wordsNextTeam: () => { S.words.cur = null; save(); RENDER.words(); },
+  wordsFinish: () => finishFormat("words"),
+  toWords: () => showView("words"),
+
+  openWhoSetup: () => { if (S.who && !S.who.finished) { showView("who"); return; } whoCfg.phase = null; showView("whoSetup"); },
+  whoN: (b) => { whoCfg.n = Number(b.dataset.v); RENDER.whoSetup(); },
+  whoCreate,
+  whoClue: () => { const g = S.who; g.clue = Math.min(5, g.clue + 1); save(); RENDER.who(); },
+  whoRight: (b) => { const g = S.who; g.solvedBy = b.dataset.id; g.revealed = true; addScore(b.dataset.id, (6 - g.clue) * 100); fanfare(); save(); RENDER.who(); },
+  whoWrong: (b) => {
+    const g = S.who; g.out.push(b.dataset.id); beep(200, 0.3, "square", 0.12);
+    if (g.out.length >= S.teams.length) g.revealed = true;
+    save(); RENDER.who();
+  },
+  whoReveal: () => { S.who.revealed = true; save(); RENDER.who(); },
+  whoNext: () => { const g = S.who; g.i++; g.clue = 1; g.out = []; g.solvedBy = null; g.revealed = false; save(); RENDER.who(); window.scrollTo(0, 0); },
+  whoFinish: () => finishFormat("who"),
+  toWho: () => showView("who"),
+
+  openLogicSetup: () => { if (S.logic && !S.logic.finished) { showView("logic"); return; } lgCfg.phase = null; showView("logicSetup"); },
+  lgN: (b) => { lgCfg.n = Number(b.dataset.v); RENDER.logicSetup(); },
+  lgTimer: (b) => { lgCfg.timer = Number(b.dataset.v); RENDER.logicSetup(); },
+  logicCreate,
+  logicReveal: () => { S.logic.revealed = true; stopCountdown(); save(); RENDER.logic(); },
+  logicToggle: (b) => { const c = S.logic.correct, i = c.indexOf(b.dataset.id); if (i >= 0) c.splice(i, 1); else c.push(b.dataset.id); save(); RENDER.logic(); },
+  logicAward,
+  toLogic: () => showView("logic"),
+};
+
+/* =====================================================================
+   Pause und Siegerehrung
+   ===================================================================== */
+let pauseOrder = [];
+RENDER.pause = function () {
+  pauseOrder = shuffle(PAUSE_PROMPTS);
+  $("#pausePrompt").textContent = pauseOrder.pop();
+  const sec = lessonActive() && S.lesson.phases[S.lesson.idx].kind === "pause" ? S.lesson.phases[S.lesson.idx].min * 60 : 300;
+  $("#pauseCountdownWrap").innerHTML = countdownHtml("pauseCountdown", sec);
+  startCountdown(sec, "pauseCountdown", () => toast("Pause vorbei!"));
+};
+RENDER.podium = function () {
+  const sorted = S.teams.slice().sort((a, b) => b.score - a.score);
+  const scores = [...new Set(sorted.map((t) => t.score))];
+  const place = (t) => scores.indexOf(t.score) + 1;
+  const top = sorted.slice(0, 3);
+  const order = top.length === 3 ? [top[1], top[0], top[2]] : top.length === 2 ? [top[1], top[0]] : top;
+  const maxS = Math.max(1, sorted[0] ? sorted[0].score : 1);
+  $("#podium").innerHTML = order.map((t) => {
+    const p = place(t);
+    const h = 110 + (p === 1 ? 110 : p === 2 ? 60 : 20) + (t.score > 0 ? 20 * t.score / maxS : 0);
+    return `<div class="podest"><div class="name">${p === 1 ? "👑 " : ""}${esc(t.name)}</div>
+      <div class="block" style="background:${t.color};height:${h}px"><span class="place">${p}.</span><span class="p">${fmt(t.score)} P.</span></div></div>`;
+  }).join("");
+  $("#restList").innerHTML = sorted.slice(3).map((t) => `<div class="result-row" style="margin-bottom:6px"><span class="rk">${place(t)}.</span>
+    <span class="nm"><span class="team-dot" style="background:${t.color}"></span>${esc(t.name)}</span><span></span><span class="pt" style="color:var(--text)">${fmt(t.score)}</span></div>`).join("");
+  $("#podiumActions").innerHTML = lessonActive() && S.lesson.phases[S.lesson.idx].kind === "podium"
+    ? `<button class="btn btn-primary btn-big" style="width:auto" data-act="nextPhase">Lektion beenden ✓</button>`
+    : `<button class="btn btn-primary" data-act="home">Zur Startseite</button><button class="btn btn-outline" data-act="resetScores">Punkte auf 0 setzen</button>`;
+  if (sorted.some((t) => t.score > 0)) { confetti(); fanfare(); }
+};
+
+/* =====================================================================
+   Einstellungen
+   ===================================================================== */
+function openSettings() {
+  let theme = "auto"; try { theme = localStorage.getItem("sv_theme") || "auto"; } catch (e) {}
+  openModal(`<h2>⚙️ Einstellungen</h2>
+    <span class="field-label">Darstellung</span>
+    <div class="chips">${[["auto", "Automatisch"], ["light", "☀️ Hell"], ["dark", "🌙 Dunkel"]].map(([v, l]) =>
+      `<button class="chip${theme === v ? " on" : ""}" data-act="setTheme" data-v="${v}">${l}</button>`).join("")}</div>
+    <span class="field-label">Töne</span>
+    <div class="chips"><button class="chip${soundOn() ? " on" : ""}" data-act="setSound" data-v="on">🔊 An</button><button class="chip${soundOn() ? "" : " on"}" data-act="setSound" data-v="off">🔇 Aus</button></div>
+    <span class="field-label">Fragen</span>
+    <p class="hint" style="margin-top:0">Die App merkt sich gestellte Fragen und wählt zuerst neue (${S.used.length} Quizfragen, ${S.usedEst.length} Schätzfragen gemerkt).</p>
+    <button class="btn" data-act="resetUsed">Alle Fragen wieder freigeben</button>
+    <span class="field-label">Daten</span>
+    <p class="hint" style="margin-top:0">Gespeichert werden nur Teamnamen, Punkte und Spielstände, und zwar nur auf diesem Gerät. Nichts wird ins Internet übertragen.</p>
+    <button class="btn btn-danger" data-act="resetAll">Alles zurücksetzen</button>
+    <div class="btn-row"><button class="btn btn-primary" data-act="closeModal">Schliessen</button></div>`);
+}
+function setTheme(v) {
+  try { if (v === "auto") localStorage.removeItem("sv_theme"); else localStorage.setItem("sv_theme", v); } catch (e) {}
+  if (v === "auto") delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = v;
+  openSettings();
+}
+
+/* =====================================================================
+   Aktionen (Ereignis-Delegation über data-act)
+   ===================================================================== */
+const ACTIONS = {
+  home: () => { viewStack = []; showView("home", { noPush: true }); },
+  back: goBack,
+  settings: openSettings,
+  closeModal,
+  setTheme: (b) => setTheme(b.dataset.v),
+  setSound: (b) => { try { localStorage.setItem("sv_sound", b.dataset.v); } catch (e) {} openSettings(); if (b.dataset.v === "on") beep(); },
+  resetUsed: () => { S.used = []; S.usedEst = []; save(); openSettings(); toast("Alle Fragen sind wieder frei."); },
+  resetAll: () => openModal(`<h2>Alles zurücksetzen?</h2><p>Teams, Punkte, laufende Spiele und die Lektion werden gelöscht.</p>
+    <div class="btn-row"><button class="btn" data-act="closeModal">Abbrechen</button><button class="btn btn-danger" data-act="resetAllYes">Zurücksetzen</button></div>`),
+  resetAllYes: () => { S = defaultState(); save(); closeModal(); viewStack = []; showView("home", { noPush: true }); },
+  fullscreen: () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
+  },
+
+  setStufe: (b) => { S.stufe = Number(b.dataset.v); save(); RENDER.home(); },
+  teamCount: (b) => {
+    const n = clamp(S.teams.length + Number(b.dataset.d), 2, 6);
+    if (n === S.teams.length) return;
+    S.teams = makeTeams(n, S.teams); save(); renderTeamEditor();
+  },
+  teamNames: () => {
+    const names = shuffle(TEAM_NAMES);
+    S.teams.forEach((t, i) => { t.name = names[i]; }); save(); renderTeamEditor();
+  },
+  resetScores: () => { S.teams.forEach((t) => { t.score = 0; }); save(); if (currentView === "home") renderTeamEditor(); else showView(currentView, { noPush: true }); toast("Punkte auf 0 gesetzt."); },
+  scoreEdit: (b) => openScoreEdit(b.dataset.id),
+  scoreAdj: (b) => { addScore(b.dataset.id, Number(b.dataset.d)); const t = teamById(b.dataset.id); $("#scoreEditVal").textContent = fmt(t.score); if (currentView === "home") renderTeamEditor(); },
+
+  openPlan: () => showView("plan"),
+  planDur: (b) => { S.planCfg.dur = Number(b.dataset.v); save(); RENDER.plan(); },
+  planFocus: (b) => { S.planCfg.focus = b.dataset.v; save(); RENDER.plan(); },
+  planType: (b) => { S.planCfg.type = b.dataset.v; save(); RENDER.plan(); },
+  lessonStart: () => {
+    if (S.teams.some((t) => t.score) || (S.quiz && !S.quiz.finished)) {
+      openModal(`<h2>Lektion starten?</h2><p>Die Punkte aller Teams werden auf 0 gesetzt und laufende Spiele beendet.</p>
+        <div class="btn-row"><button class="btn" data-act="closeModal">Abbrechen</button><button class="btn btn-primary" data-act="lessonStartYes">Starten</button></div>`);
+    } else lessonStart();
+  },
+  lessonStartYes: () => { closeModal(); lessonStart(); },
+  lessonStop: () => { S.lesson.done = true; save(); showView("plan", { noPush: true }); },
+  startPhase: (b) => startPhase(Number(b.dataset.i)),
+  nextPhase,
+
+  openQuizSetup: () => {
+    if (S.quiz && !S.quiz.finished) { showView("board"); return; }
+    quizSetupPrefill({ phase: null }); showView("quizSetup");
+  },
+  qsFocus: (b) => { qsCfg.focus = b.dataset.v; qsCfg.cats = randomCats(qsCfg.focus, Math.min(qsCfg.rows >= 5 ? 5 : 4, catsForFocus(qsCfg.focus).length)); RENDER.quizSetup(); },
+  qsShuffle: () => { qsCfg.cats = randomCats(qsCfg.focus, clamp(qsCfg.cats.length || 4, 2, catsForFocus(qsCfg.focus).length)); RENDER.quizSetup(); },
+  qsCat: (b) => {
+    const id = b.dataset.v, i = qsCfg.cats.indexOf(id);
+    if (i >= 0) qsCfg.cats.splice(i, 1);
+    else if (qsCfg.cats.length >= 6) { toast("Höchstens 6 Kategorien."); return; }
+    else qsCfg.cats.push(id);
+    RENDER.quizSetup();
+  },
+  qsRows: (b) => { qsCfg.rows = Number(b.dataset.v); RENDER.quizSetup(); },
+  qsMode: (b) => { qsCfg.mode = b.dataset.v; RENDER.quizSetup(); },
+  qsTimer: (b) => { qsCfg.timer = Number(b.dataset.v); RENDER.quizSetup(); },
+  quizCreate,
+  toBoard: () => { if (S.quiz) { S.quiz.open = null; save(); } viewStack = viewStack.filter((v) => v !== "question" && v !== "board"); showView("board"); },
+  cellOpen: (b) => openCell(Number(b.dataset.r), Number(b.dataset.c)),
+  cellReopen: (b) => quizReopen(Number(b.dataset.r), Number(b.dataset.c)),
+  cellReopenYes: (b) => {
+    const r = Number(b.dataset.r), c = Number(b.dataset.c), cell = S.quiz.cells[r][c], t = teamById(cell.by);
+    if (t) t.score -= (r + 1) * 100;
+    cell.done = false; cell.by = null; save(); closeModal(); openCell(r, c);
+  },
+  reveal: () => { qv.revealed = true; stopCountdown(); renderQuestionDynamic(); },
+  award: (b) => quizAward(b.dataset.id),
+  buzzRight: () => quizAward(qv.buzzed),
+  buzzWrong: () => {
+    qv.locked.add(qv.buzzed); qv.buzzed = null;
+    beep(200, 0.3, "square", 0.12);
+    if (qv.locked.size >= S.teams.length) qv.revealed = true;
+    renderQuestionDynamic();
+  },
+  quizEnd: () => {
+    if (S.quiz && quizOpenCount()) {
+      openModal(`<h2>Quiz beenden?</h2><p>Es sind noch ${quizOpenCount()} Fragen offen. Die Punkte bleiben erhalten.</p>
+        <div class="btn-row"><button class="btn" data-act="closeModal">Weiterspielen</button><button class="btn btn-primary" data-act="quizEndYes">Beenden</button></div>`);
+    } else quizEnd();
+  },
+  quizEndYes: () => { closeModal(); quizEnd(); },
+  cdRestart: (b) => startCountdown(Number(b.dataset.sec), b.dataset.el),
+
+  openEstSetup: () => {
+    if (S.est && !S.est.finished) { showView("est"); return; }
+    estSetupPrefill({ phase: null }); showView("estSetup");
+  },
+  esN: (b) => { esCfg.n = Number(b.dataset.v); RENDER.estSetup(); },
+  esTimer: (b) => { esCfg.timer = Number(b.dataset.v); RENDER.estSetup(); },
+  estCreate,
+  toEst: () => showView("est"),
+  estReveal,
+  estNext: () => { const e = S.est; e.i++; e.guesses = {}; e.revealed = false; e.results = null; save(); showView("est", { noPush: true }); },
+  estFinish,
+
+  pauseNext: () => { if (!pauseOrder.length) pauseOrder = shuffle(PAUSE_PROMPTS); $("#pausePrompt").textContent = pauseOrder.pop(); },
+  openPodium: () => showView("podium"),
+};
+Object.assign(ACTIONS, FORMAT_ACTIONS);
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-act]");
+  if (!b || b.disabled) return;
+  const f = ACTIONS[b.dataset.act];
+  if (f) f(b, e);
+});
+document.addEventListener("keydown", (e) => {
+  if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches("[role=button][data-act]")) { e.preventDefault(); e.target.click(); }
+});
+
+/* Vollbild-Knopf nur zeigen, wo es geht (iPad Safari kann es nicht) */
+if (!document.fullscreenEnabled) $$("[data-fs]").forEach((b) => { b.hidden = true; });
+
+showView("home", { noPush: true });
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
+}
+</script>
+</body>
+</html>
