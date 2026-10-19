@@ -252,6 +252,7 @@
   .guess input {
     width: 100%; border: 0; border-radius: 10px; padding: 10px 12px; font-size: 1.3rem; font-weight: 700;
     background: #fff; color: #0f172a; font-variant-numeric: tabular-nums;
+    -webkit-text-security: disc; text-security: disc; /* verdeckt bis zum Auflösen (Beamer) */
   }
   .unit-hint { margin-top: 10px; font-size: 1.1rem; color: var(--muted); font-weight: 600; }
   .numline { width: 100%; height: auto; margin-top: 18px; overflow: visible; }
@@ -344,6 +345,17 @@
   .door.open { opacity: 1; border-color: var(--success); background: var(--success-soft); color: var(--success); }
   .door.cur { opacity: 1; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
   .esc-puzzle { font-size: clamp(1.15rem, 2.6vw, 1.9rem); font-weight: 600; line-height: 1.45; margin: 4px 0 0; }
+  /* QR-Codes und Spickzettel */
+  .qr { display: block; width: 100%; max-width: 380px; height: auto; margin: 10px auto; border-radius: 8px; }
+  .qr-join { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+  .qr-join .qr { width: min(260px, 70vw); margin: 0; }
+  .qr-join p { flex: 1; min-width: 200px; margin: 0; font-size: 1.15rem; }
+  .cheat-cat { margin-top: 14px; }
+  .cheat-cat h2 { font-size: 1.1rem; margin: 0 0 6px; }
+  .cheat-row { display: grid; grid-template-columns: 3.2em 1fr; gap: 8px; padding: 8px 0; border-top: 1px solid var(--border); }
+  .cheat-row .v { font-weight: 800; color: var(--muted); }
+  .cheat-row .q { font-size: .9rem; color: var(--muted); }
+  .cheat-row .a { font-weight: 800; font-size: 1.1rem; }
   .esc-morse { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 4px; margin-top: 14px; font-family: "Courier New", monospace; font-size: 1rem; }
   .esc-morse span { background: var(--surface-2); border-radius: 8px; padding: 3px 8px; }
   .door-anim { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; background: var(--accent); perspective: 1400px; overflow: hidden; }
@@ -467,7 +479,7 @@
     </div>
 
     <p class="privacy">🔒 Die App speichert nur Teamnamen und Punkte auf diesem Gerät, keine Namen von Schülerinnen und Schülern. Sie funktioniert auch offline.</p>
-    <div id="appVersionLabel">v2026-10-16.1</div>
+    <div id="appVersionLabel">v2026-10-19.1</div>
   </section>
 
   <!-- Lektions-Assistent -->
@@ -537,6 +549,7 @@
     <div class="topbar">
       <button class="btn btn-ghost" data-act="home">← Start</button>
       <h2>🎯 Teamquiz</h2>
+      <button class="btn btn-ghost" data-act="quizCheat">🤫 Spickzettel</button>
       <button class="icon-btn" data-act="fullscreen" aria-label="Vollbild" data-fs>⛶</button>
       <button class="btn btn-outline" data-act="quizEnd">🏁 Beenden</button>
     </div>
@@ -767,10 +780,13 @@
       <h1>📱 Als Gruppe mitspielen</h1>
     </div>
     <div class="card">
-      <span class="field-label">Welches Abenteuer? (sagt die Lehrperson)</span>
-      <div class="topic-grid" id="egAdvs"></div>
-      <span class="field-label">Spielform (sagt die Lehrperson)</span>
-      <div class="chips" id="egMode"></div>
+      <div id="egQrInfo"></div>
+      <div id="egChoose">
+        <span class="field-label">Welches Abenteuer? (sagt die Lehrperson)</span>
+        <div class="topic-grid" id="egAdvs"></div>
+        <span class="field-label">Spielform (sagt die Lehrperson)</span>
+        <div class="chips" id="egMode"></div>
+      </div>
       <span class="field-label">Eure Gruppennummer</span>
       <div class="chips" id="egGroup"></div>
     </div>
@@ -796,6 +812,16 @@
     <div class="podium" id="podium"></div>
     <div class="rest-list" id="restList"></div>
     <div class="btn-row" style="justify-content:center;margin-top:20px" id="podiumActions"></div>
+  </section>
+
+  <!-- Spickzettel auf dem Handy der Lehrperson (Daten nur im Link, nichts gespeichert) -->
+  <section class="view" id="view-cheat">
+    <div class="topbar">
+      <h1>🤫 Spickzettel</h1>
+      <button class="btn btn-ghost" data-act="cheatClose">Schliessen</button>
+    </div>
+    <p class="hint" style="margin-top:0">Nur für die Lehrperson. Nicht am Beamer zeigen.</p>
+    <div id="cheatBody"></div>
   </section>
 </main>
 
@@ -838,6 +864,143 @@ function parseNum(raw) {
   const n = Number(s);
   return Number.isFinite(n) ? n : null;
 }
+
+/* =====================================================================
+   QR-Code (Byte-Modus, Fehlerkorrektur M, Version 1–40), eigener Code
+   ohne Bibliothek, damit die App offline und ohne Fremdserver bleibt.
+   Aufbau nach ISO/IEC 18004 (Tabellen wie bei Nayuki, MIT).
+   ===================================================================== */
+const QR = (() => {
+  const ECC_CW = [-1, 10, 16, 26, 18, 24, 16, 18, 22, 22, 26, 30, 22, 22, 24, 24, 28, 28, 26, 26, 26, 26, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28];
+  const BLOCKS = [-1, 1, 1, 1, 2, 2, 4, 4, 4, 5, 5, 5, 8, 9, 9, 10, 10, 11, 13, 14, 16, 17, 17, 18, 20, 21, 23, 25, 26, 28, 29, 31, 33, 35, 37, 38, 40, 43, 45, 47, 49];
+  const bit = (x, i) => ((x >>> i) & 1) !== 0;
+  function rawModules(v) {
+    let r = (16 * v + 128) * v + 64;
+    if (v >= 2) { const n = Math.floor(v / 7) + 2; r -= (25 * n - 10) * n - 55; if (v >= 7) r -= 36; }
+    return r;
+  }
+  const dataCw = (v) => Math.floor(rawModules(v) / 8) - ECC_CW[v] * BLOCKS[v];
+  function gfMul(x, y) { let z = 0; for (let i = 7; i >= 0; i--) { z = (z << 1) ^ ((z >>> 7) * 0x11d); z ^= ((y >>> i) & 1) * x; } return z; }
+  function rsDivisor(d) {
+    const r = new Array(d).fill(0); r[d - 1] = 1; let root = 1;
+    for (let i = 0; i < d; i++) { for (let j = 0; j < d; j++) { r[j] = gfMul(r[j], root); if (j + 1 < d) r[j] ^= r[j + 1]; } root = gfMul(root, 2); }
+    return r;
+  }
+  function rsRemainder(data, div) {
+    const r = div.map(() => 0);
+    for (const b of data) { const f = b ^ r.shift(); r.push(0); div.forEach((c, i) => { r[i] ^= gfMul(c, f); }); }
+    return r;
+  }
+  function alignPos(v) {
+    if (v === 1) return [];
+    const n = Math.floor(v / 7) + 2, size = v * 4 + 17;
+    const step = v === 32 ? 26 : Math.ceil((v * 4 + 4) / (n * 2 - 2)) * 2;
+    const r = [6];
+    for (let p = size - 7; r.length < n; p -= step) r.splice(1, 0, p);
+    return r;
+  }
+  function make(text) {
+    const bytes = Array.from(new TextEncoder().encode(text));
+    let v = 1;
+    for (; v <= 40; v++) if (4 + (v <= 9 ? 8 : 16) + bytes.length * 8 <= dataCw(v) * 8) break;
+    if (v > 40) throw new Error("Text zu lang für QR");
+    // Bitstrom
+    const bits = [];
+    const put = (val, len) => { for (let i = len - 1; i >= 0; i--) bits.push((val >>> i) & 1); };
+    put(4, 4); put(bytes.length, v <= 9 ? 8 : 16); bytes.forEach((b) => put(b, 8));
+    const cap = dataCw(v) * 8;
+    put(0, Math.min(4, cap - bits.length));
+    put(0, (8 - bits.length % 8) % 8);
+    for (let pad = 0xec; bits.length < cap; pad ^= 0xec ^ 0x11) put(pad, 8);
+    const data = [];
+    for (let i = 0; i < bits.length; i += 8) data.push(bits.slice(i, i + 8).reduce((a, b) => (a << 1) | b, 0));
+    // Fehlerkorrektur und Verschränkung
+    const nb = BLOCKS[v], el = ECC_CW[v], raw = Math.floor(rawModules(v) / 8);
+    const nShort = nb - raw % nb, shortLen = Math.floor(raw / nb), div = rsDivisor(el);
+    const blocks = [];
+    for (let i = 0, k = 0; i < nb; i++) {
+      const dat = data.slice(k, k + shortLen - el + (i < nShort ? 0 : 1)); k += dat.length;
+      const ecc = rsRemainder(dat, div);
+      if (i < nShort) dat.push(0);
+      blocks.push(dat.concat(ecc));
+    }
+    const cw = [];
+    for (let i = 0; i < blocks[0].length; i++) blocks.forEach((b, j) => { if (i !== shortLen - el || j >= nShort) cw.push(b[i]); });
+    // Matrix
+    const size = v * 4 + 17;
+    const m = Array.from({ length: size }, () => new Array(size).fill(false));
+    const fn = Array.from({ length: size }, () => new Array(size).fill(false));
+    const setF = (x, y, d) => { m[y][x] = d; fn[y][x] = true; };
+    for (let i = 0; i < size; i++) { setF(6, i, i % 2 === 0); setF(i, 6, i % 2 === 0); }
+    [[3, 3], [size - 4, 3], [3, size - 4]].forEach(([x, y]) => {
+      for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) {
+        const d = Math.max(Math.abs(dx), Math.abs(dy)), xx = x + dx, yy = y + dy;
+        if (xx >= 0 && xx < size && yy >= 0 && yy < size) setF(xx, yy, d !== 2 && d !== 4);
+      }
+    });
+    const ap = alignPos(v), na = ap.length;
+    for (let i = 0; i < na; i++) for (let j = 0; j < na; j++) {
+      if ((i === 0 && j === 0) || (i === 0 && j === na - 1) || (i === na - 1 && j === 0)) continue;
+      for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) setF(ap[i] + dx, ap[j] + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1);
+    }
+    const drawFormat = (mask) => {
+      const d = (0 << 3) | mask; let r = d; // Stufe M = 0
+      for (let i = 0; i < 10; i++) r = (r << 1) ^ ((r >>> 9) * 0x537);
+      const b = ((d << 10) | r) ^ 0x5412;
+      for (let i = 0; i <= 5; i++) setF(8, i, bit(b, i));
+      setF(8, 7, bit(b, 6)); setF(8, 8, bit(b, 7)); setF(7, 8, bit(b, 8));
+      for (let i = 9; i < 15; i++) setF(14 - i, 8, bit(b, i));
+      for (let i = 0; i < 8; i++) setF(size - 1 - i, 8, bit(b, i));
+      for (let i = 8; i < 15; i++) setF(8, size - 15 + i, bit(b, i));
+      setF(8, size - 8, true);
+    };
+    drawFormat(0);
+    if (v >= 7) {
+      let r = v; for (let i = 0; i < 12; i++) r = (r << 1) ^ ((r >>> 11) * 0x1f25);
+      const b = (v << 12) | r;
+      for (let i = 0; i < 18; i++) { const a = size - 11 + i % 3, c = Math.floor(i / 3); setF(a, c, bit(b, i)); setF(c, a, bit(b, i)); }
+    }
+    let i = 0;
+    for (let right = size - 1; right >= 1; right -= 2) {
+      if (right === 6) right = 5;
+      for (let vert = 0; vert < size; vert++) for (let j = 0; j < 2; j++) {
+        const x = right - j, up = ((right + 1) & 2) === 0, y = up ? size - 1 - vert : vert;
+        if (!fn[y][x] && i < cw.length * 8) { m[y][x] = bit(cw[i >>> 3], 7 - (i & 7)); i++; }
+      }
+    }
+    // Maske mit der kleinsten Strafpunktzahl wählen
+    const masks = [(x, y) => (x + y) % 2 === 0, (x, y) => y % 2 === 0, (x) => x % 3 === 0, (x, y) => (x + y) % 3 === 0,
+      (x, y) => (Math.floor(x / 3) + Math.floor(y / 2)) % 2 === 0, (x, y) => x * y % 2 + x * y % 3 === 0,
+      (x, y) => (x * y % 2 + x * y % 3) % 2 === 0, (x, y) => ((x + y) % 2 + x * y % 3) % 2 === 0];
+    const applyMask = (k) => { for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) if (!fn[y][x] && masks[k](x, y)) m[y][x] = !m[y][x]; };
+    const penalty = () => {
+      let p = 0, dark = 0;
+      for (let a = 0; a < size; a++) {
+        let rr = 1, rc = 1;
+        for (let b = 1; b < size; b++) {
+          if (m[a][b] === m[a][b - 1]) { rr++; if (rr === 5) p += 3; else if (rr > 5) p++; } else rr = 1;
+          if (m[b][a] === m[b - 1][a]) { rc++; if (rc === 5) p += 3; else if (rc > 5) p++; } else rc = 1;
+        }
+      }
+      for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+        if (m[y][x]) dark++;
+        if (x < size - 1 && y < size - 1 && m[y][x] === m[y][x + 1] && m[y][x] === m[y + 1][x] && m[y][x] === m[y + 1][x + 1]) p += 3;
+      }
+      return p + Math.floor(Math.abs(dark * 20 - size * size * 10) / (size * size)) * 10;
+    };
+    let best = 0, bestP = Infinity;
+    for (let k = 0; k < 8; k++) { applyMask(k); drawFormat(k); const p = penalty(); if (p < bestP) { bestP = p; best = k; } applyMask(k); }
+    applyMask(best); drawFormat(best);
+    return m;
+  }
+  function svg(text) {
+    const m = make(text), n = m.length, q = 4;
+    let d = "";
+    m.forEach((row, y) => row.forEach((on, x) => { if (on) d += `M${x + q},${y + q}h1v1h-1z`; }));
+    return `<svg class="qr" viewBox="0 0 ${n + 2 * q} ${n + 2 * q}" shape-rendering="crispEdges" role="img" aria-label="QR-Code"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
+  }
+  return { make, svg };
+})();
 
 /* =====================================================================
    Inhalte: Kategorien und Fragenbanken
@@ -2144,7 +2307,20 @@ function renderQuestionDynamic() {
   } else {
     const turnId = quizTurnTeamId();
     const teamsHtml = S.teams.map((t) => `<button class="team-btn${t.id === turnId ? " first" : ""}" style="background:${t.color}" data-act="award" data-id="${t.id}" ${qv.locked.has(t.id) ? "disabled" : ""}>${esc(t.name)} +${val}</button>`).join("");
-    if (!show) {
+    if (!show && qz.mode === "turn" && turnId) {
+      // Reihum: werten, ohne die Lösung am Beamer zu zeigen; bei «falsch» dürfen die anderen Teams
+      if (!qv.locked.has(turnId)) {
+        ctl = `<p class="muted" style="font-size:1.2rem;font-weight:700;margin:0">${esc(teamById(turnId).name)} antwortet</p>
+          <div class="btn-row"><button class="btn btn-primary" data-act="award" data-id="${turnId}">✓ Richtig (+${val})</button>
+          <button class="btn btn-danger" data-act="turnWrong">✗ Falsch – andere Teams</button>
+          <button class="btn btn-ghost" data-act="reveal">Lösung zeigen</button></div>`;
+      } else {
+        ctl = `<p class="muted" style="font-size:1.2rem;font-weight:700;margin:0">Andere Teams: Wer weiss es? Hand hoch!</p>
+          <div class="award"><span class="lbl">Richtig beantwortet:</span>${S.teams.filter((t) => !qv.locked.has(t.id)).map((t) =>
+            `<button class="team-btn" style="background:${t.color}" data-act="award" data-id="${t.id}">${esc(t.name)} +${val}</button>`).join("")}</div>
+          <div class="btn-row"><button class="btn btn-ghost" data-act="reveal">Niemand weiss es – Lösung zeigen</button></div>`;
+      }
+    } else if (!show) {
       const msg = qz.mode === "buzzer" ? (qv.locked.size >= S.teams.length ? "Alle Teams haben es versucht." : "Wer weiss es? Buzzer drücken!") : (turnId ? `${esc(teamById(turnId).name)} antwortet` : "");
       ctl = `${msg ? `<p class="muted" style="font-size:1.2rem;font-weight:700;margin:0">${msg}</p>` : ""}
         <button class="btn btn-primary btn-big" data-act="reveal">Lösung zeigen</button>`;
@@ -2180,6 +2356,73 @@ function quizEnd() {
   if (lessonActive() && S.quiz && S.quiz.phase === S.lesson.idx) nextPhase();
   else showView("podium");
 }
+
+/* Spickzettel: Lösungen per QR aufs Handy der Lehrperson. Die Daten stehen nur im Link (#lsg=…,
+   der Teil nach # wird nicht an den Server geschickt). Bankfragen nur als Index, da die Banken nur hinten wachsen. */
+function b64urlEncode(str) {
+  let bin = ""; new TextEncoder().encode(str).forEach((b) => { bin += String.fromCharCode(b); });
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function b64urlDecode(s) {
+  const bin = atob(s.replace(/-/g, "+").replace(/_/g, "/"));
+  return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
+}
+const appBaseUrl = () => location.origin + location.pathname;
+function cheatUrl(data) { return appBaseUrl() + "#lsg=" + b64urlEncode(JSON.stringify(data)); }
+function quizCheatData() {
+  const qz = S.quiz;
+  return { k: "quiz", c: qz.cats, a: qz.cells.map((row) => row.map((cell) =>
+    cell.id ? Number(cell.id.split("-").pop()) : [cell.q.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(), cell.a])) };
+}
+// Zuerst nachfragen: Beim gespiegelten iPad könnten SuS den Code sonst mit ihrem iPad scannen
+function cheatAsk(kind) {
+  openModal(`<h2>🤫 Spickzettel aufs Handy</h2>
+    <p>Gleich erscheint ein QR-Code mit allen Lösungen. Scanne ihn mit der Kamera deines Handys.</p>
+    <p><b>Wichtig:</b> Zuerst die Bildschirmsynchronisierung beenden oder den Beamer stumm schalten. Sonst können die SuS den Code mit ihren iPads scannen.</p>
+    <div class="btn-row"><button class="btn" data-act="closeModal">Abbrechen</button><button class="btn btn-primary" data-act="cheatShow" data-k="${kind}">Beamer ist aus – QR zeigen</button></div>`);
+}
+let cheatTimer = null;
+function cheatShow(kind) {
+  const data = kind === "esc" ? { k: "esc", e: S.esc.adv } : quizCheatData();
+  let sec = 30;
+  openModal(`<h2>🤫 Mit dem Handy scannen</h2>${QR.svg(cheatUrl(data))}
+    <p class="hint" style="text-align:center">Schliesst automatisch in <b id="cheatSec">${sec}</b> s.</p>
+    <div class="btn-row"><button class="btn btn-primary" data-act="closeModal">Fertig</button></div>`);
+  clearInterval(cheatTimer);
+  cheatTimer = setInterval(() => {
+    const el = $("#cheatSec");
+    if (!el || $("#modal").hidden) { clearInterval(cheatTimer); return; }
+    if (--sec <= 0) { clearInterval(cheatTimer); closeModal(); } else el.textContent = sec;
+  }, 1000);
+}
+let cheatData = null;
+function readCheatHash() {
+  const m = /^#lsg=([A-Za-z0-9_-]+)$/.exec(location.hash);
+  if (!m) return null;
+  try { return JSON.parse(b64urlDecode(m[1])); } catch (e) { return null; }
+}
+RENDER.cheat = function () {
+  const d = cheatData;
+  let html = "";
+  if (d && d.k === "quiz" && Array.isArray(d.c)) {
+    html = d.c.map((catId, ci) => {
+      const cat = CAT_BY_ID[catId];
+      if (!cat) return "";
+      return `<div class="card cheat-cat"><h2>${cat.icon} ${esc(cat.name)}</h2>${d.a.map((row, r) => {
+        const cell = row[ci];
+        const it = typeof cell === "number" ? (BANK[catId] || [])[cell] : null;
+        const q = Array.isArray(cell) ? cell[0] : it ? it[1] : "?", a = Array.isArray(cell) ? cell[1] : it ? it[2] : "? (App neu laden)";
+        return `<div class="cheat-row"><span class="v">${(r + 1) * 100}</span><div><div class="q">${esc(q)}</div><div class="a">${esc(a)}</div></div></div>`;
+      }).join("")}</div>`;
+    }).join("");
+  } else if (d && d.k === "esc" && ESC_BY_ID[d.e]) {
+    const A = ESC_BY_ID[d.e];
+    html = `<div class="card cheat-cat"><h2>${A.icon} ${esc(A.title)}</h2>${A.stations.map((st, i) =>
+      `<div class="cheat-row"><span class="v">${i + 1}</span><div><div class="q">${esc(st.title)} · Buchstabe ${esc(st.letter)}</div><div class="a">${esc(st.code)}</div></div></div>`).join("")}
+      <div class="cheat-row"><span class="v">🔓</span><div><div class="q">Schlusswort</div><div class="a">${esc(A.final)}</div></div></div></div>`;
+  } else html = `<div class="card"><p>Dieser Spickzettel-Link ist ungültig.</p></div>`;
+  $("#cheatBody").innerHTML = html;
+};
 
 /* Buzzer: pointerdown pro Finger (mehrere Teams gleichzeitig), Tastatur 1–6 */
 function showBuzzers() { $("#buzzers").hidden = false; renderBuzzers(); }
@@ -2921,9 +3164,27 @@ setInterval(() => {
 }, 1000);
 
 /* Gruppen-Gerät einrichten */
-let egCfg = { adv: "labor", group: 1, mode: "rooms" };
+let egCfg = { adv: "labor", group: 1, mode: "rooms", fromQr: false };
 const ESC_GROUP_MODES = [["rooms", "🚪 Breakout-Room (Rätsel auf dem iPad)"], ["stations", "🗺️ Stationen (Karten im Zimmer)"]];
+// QR-Start: ?esc=<Abenteuer>&m=<rooms|stations> legt beides fest, die Gruppe wählt nur noch ihre Nummer
+function escJoinUrl() { return `${appBaseUrl()}?esc=${encodeURIComponent(S.esc.adv)}&m=${S.esc.mode === "stations" ? "stations" : "rooms"}`; }
+function escJoinHtml() {
+  return `<div class="card qr-join">${QR.svg(escJoinUrl())}
+    <p><b>📷 Gruppen-iPads:</b> Kamera öffnen und diesen Code scannen. Danach nur noch die Gruppennummer wählen.</p></div>`;
+}
+function readJoinParams() {
+  const p = new URLSearchParams(location.search);
+  const adv = p.get("esc"), mode = p.get("m");
+  if (!adv || !ESC_BY_ID[adv]) return false;
+  history.replaceState(null, "", appBaseUrl()); // beim Neuladen nicht nochmals
+  egCfg.adv = adv; egCfg.mode = mode === "stations" ? "stations" : "rooms"; egCfg.fromQr = true;
+  return true;
+}
 RENDER.escGroupSetup = function () {
+  const A = ESC_BY_ID[egCfg.adv];
+  $("#egChoose").hidden = egCfg.fromQr;
+  $("#egQrInfo").innerHTML = egCfg.fromQr ? `<p style="margin-top:0;font-size:1.15rem">${A.icon} <b>${esc(A.title)}</b> · ${esc(ESC_GROUP_MODES.find((m) => m[0] === egCfg.mode)[1])}
+    <button class="btn btn-ghost small" style="min-height:0;padding:2px 6px" data-act="egChange">ändern</button></p>` : "";
   $("#egMode").innerHTML = ESC_GROUP_MODES.map(([v, l]) => `<button class="chip${egCfg.mode === v ? " on" : ""}" data-act="egMode" data-v="${v}">${l}</button>`).join("");
   $("#egAdvs").innerHTML = ESCAPES.map((A) => `<button class="topic${egCfg.adv === A.id ? " on" : ""}" data-act="egAdv" data-v="${A.id}"><div class="ic">${A.icon}</div><h3>${A.title}</h3></button>`).join("");
   $("#egGroup").innerHTML = [1, 2, 3, 4, 5, 6].map((g) => `<button class="chip${egCfg.group === g ? " on" : ""}" data-act="egGroup" data-v="${g}" style="${egCfg.group === g ? `background:${TEAM_COLORS[g - 1]};border-color:${TEAM_COLORS[g - 1]};color:#fff` : ""}">Gruppe ${g}</button>`).join("");
@@ -2965,13 +3226,13 @@ RENDER.escLead = function () {
         "Wer den Code zuerst hat, meldet sich. Stimmt er, bekommt das Team Punkte, und die Tür zum nächsten Raum geht auf.",
         "Hinter Raum 5 wartet das letzte Schloss: das Lösungswort aus allen gesammelten Buchstaben.",
       ] : mode === "rooms" ? [
-        "Jede Gruppe öffnet auf ihrem iPad diese App → <b>🚪 Breakout-Room</b> → <b>Als Gruppe mitspielen</b>.",
-        `Dort «${esc(A.title)}», <b>🚪 Breakout-Room</b> und die eigene Gruppennummer wählen.`,
+        "Jede Gruppe scannt mit dem iPad den QR-Code unten und wählt ihre Gruppennummer.",
+        `Ohne Kamera: App öffnen → <b>🚪 Breakout-Room</b> → <b>Als Gruppe mitspielen</b> → «${esc(A.title)}», <b>🚪 Breakout-Room</b> und Gruppennummer.`,
         "Raum für Raum lösen: Jeder richtige Code öffnet die nächste Tür. Falsche Codes geben eine kurze Sperre, Tipps kosten 1 Minute.",
         "Zeigt eine Gruppe «Geschafft!», hier auf 🏁 tippen. Die Reihenfolge ergibt die Punkte.",
       ] : [
         "Stationskarten drucken und an 5 Orten im Zimmer verteilen (oder auf Tische legen).",
-        `Jede Gruppe öffnet auf ihrem iPad diese App → <b>🚪 Breakout-Room</b> → <b>Als Gruppe mitspielen</b> → «${esc(A.title)}», <b>🗺️ Stationen</b> und ihre Gruppennummer.`,
+        `Jede Gruppe scannt mit dem iPad den QR-Code unten und wählt ihre Gruppennummer (ohne Kamera: App → <b>🚪 Breakout-Room</b> → <b>Als Gruppe mitspielen</b> → «${esc(A.title)}», <b>🗺️ Stationen</b>).`,
         "Ohne iPads: Die Gruppen kommen mit ihrem Code hierher (<b>Code prüfen</b>).",
         "Falsche Codes geben eine kurze Sperre, Tipps kosten 1 Minute Strafzeit.",
       ];
@@ -2981,6 +3242,7 @@ RENDER.escLead = function () {
         <button class="btn" data-act="escPrintCards">🖨️ Stationskarten drucken</button>
         <button class="btn" data-act="escPrintSolutions">📄 Lösungsblatt drucken</button>
       </div>` : ""}</div>
+      ${mode === "beamer" ? "" : escJoinHtml()}
       <button class="btn btn-primary btn-big" data-act="escGo">▶ Abenteuer starten (${e.dur} Minuten)</button>`;
   } else if (mode === "beamer") {
     html += `<div class="big-timer">${countdownHtml("escCountdown", e.dur * 60)}</div>
@@ -2995,7 +3257,7 @@ RENDER.escLead = function () {
   } else {
     const endAt = e.startedAt + e.dur * 60000;
     html += `<div class="big-timer">${countdownHtml("escCountdown", e.dur * 60)}</div>
-      <h2 style="margin-top:20px">Gruppen</h2>
+      <h2 style="margin-top:20px">Gruppen <button class="btn btn-ghost small" style="min-height:0;padding:2px 8px" data-act="escJoinQr">📷 QR für Gruppen</button></h2>
       <p class="hint" style="margin-top:0">Zeigt eine Gruppe den Bildschirm «Geschafft!», hier auf 🏁 tippen. Die Reihenfolge ergibt die Punkte (500, 400, 300 …).</p>
       <div class="esc-teams">${S.teams.map((t, i) => {
         const fi = e.finishes.findIndex((f) => f.teamId === t.id);
@@ -3065,7 +3327,7 @@ function escPrint(kind) {
 const ESCAPE_ACTIONS = {
   openEscHome: () => { if (G && G.prog && !G.prog.finishedAt) { escCtx = escCtxGroup(); showView("escPlay"); return; } showView("escHome"); },
   escLeadStart: () => { if (S.esc && !S.esc.finished) { showView("escLead"); return; } escCfg.phase = null; showView("escSetup"); },
-  escGroupStart: () => showView("escGroupSetup"),
+  escGroupStart: () => { egCfg.fromQr = false; showView("escGroupSetup"); },
   escAdv: (b) => { escCfg.adv = b.dataset.v; RENDER.escSetup(); },
   escDurSet: (b) => { escCfg.dur = Number(b.dataset.v); RENDER.escSetup(); },
   escModeSet: (b) => { escCfg.mode = b.dataset.v; RENDER.escSetup(); },
@@ -3079,7 +3341,12 @@ const ESCAPE_ACTIONS = {
   escDone: (b) => escDone(b.dataset.id),
   escCentral: (b) => { escCtx = escCtxCentral(b.dataset.id); save(); showView("escPlay"); },
   escBackLead: () => { escCtx = null; showView("escLead", { noPush: true }); },
-  escShowSolution: () => {
+  escShowSolution: () => openModal(`<h2>Lösungen anzeigen?</h2><p>Am Beamer würden alle Codes und das Schlusswort sichtbar.</p>
+    <div class="btn-row"><button class="btn" data-act="closeModal">Abbrechen</button>
+    <button class="btn btn-primary" data-act="escCheat">🤫 Aufs Handy (QR)</button>
+    <button class="btn btn-danger" data-act="escShowSolutionYes">Hier anzeigen</button></div>`),
+  escCheat: () => cheatAsk("esc"),
+  escShowSolutionYes: () => {
     const A = ESC_BY_ID[S.esc.adv];
     openModal(`<h2>Lösungen</h2><table class="pc-table">${A.stations.map((st, i) => `<tr><td>${i + 1}</td><td>${esc(st.title)}</td><td><b>${esc(st.code)}</b></td><td>${esc(st.letter)}</td></tr>`).join("")}</table>
       <p><b>Schlusswort:</b> ${esc(A.final)}</p><div class="btn-row"><button class="btn btn-primary" data-act="closeModal">Schliessen</button></div>`);
@@ -3090,6 +3357,9 @@ const ESCAPE_ACTIONS = {
   egAdv: (b) => { egCfg.adv = b.dataset.v; RENDER.escGroupSetup(); },
   egGroup: (b) => { egCfg.group = Number(b.dataset.v); RENDER.escGroupSetup(); },
   egMode: (b) => { egCfg.mode = b.dataset.v; RENDER.escGroupSetup(); },
+  egChange: () => { egCfg.fromQr = false; RENDER.escGroupSetup(); },
+  escJoinQr: () => openModal(`<h2>📷 QR für Gruppen-iPads</h2>${QR.svg(escJoinUrl())}
+    <div class="btn-row"><button class="btn btn-primary" data-act="closeModal">Schliessen</button></div>`),
   escAward: (b) => escAward(b.dataset.id),
   escToRoom: () => { escCtx = escCtxBeamer(); save(); showView("escPlay"); },
   egStart: () => { G = { adv: egCfg.adv, group: egCfg.group, mode: egCfg.mode, prog: newEscProg() }; saveGroup(); escCtx = escCtxGroup(); viewStack = []; showView("escPlay", { noPush: true }); },
@@ -3237,6 +3507,15 @@ const ACTIONS = {
   reveal: () => { qv.revealed = true; stopCountdown(); renderQuestionDynamic(); },
   award: (b) => quizAward(b.dataset.id),
   buzzRight: () => quizAward(qv.buzzed),
+  quizCheat: () => cheatAsk("quiz"),
+  cheatShow: (b) => cheatShow(b.dataset.k),
+  cheatClose: () => { history.replaceState(null, "", appBaseUrl()); cheatData = null; viewStack = []; showView("home", { noPush: true }); },
+  turnWrong: () => {
+    qv.locked.add(quizTurnTeamId());
+    beep(200, 0.3, "square", 0.12);
+    stopCountdown(); $("#qCountdownWrap").innerHTML = "";
+    renderQuestionDynamic();
+  },
   buzzWrong: () => {
     qv.locked.add(qv.buzzed); qv.buzzed = null;
     beep(200, 0.3, "square", 0.12);
@@ -3283,7 +3562,14 @@ document.addEventListener("keydown", (e) => {
 /* Vollbild-Knopf nur zeigen, wo es geht (iPad Safari kann es nicht) */
 if (!document.fullscreenEnabled) $$("[data-fs]").forEach((b) => { b.hidden = true; });
 
-if (G && G.prog && !G.prog.finishedAt) { escCtx = escCtxGroup(); showView("escPlay", { noPush: true }); }
+cheatData = readCheatHash();
+if (cheatData) showView("cheat", { noPush: true });
+else if (readJoinParams()) {
+  // laufende Gruppe mit demselben Abenteuer weiterführen, sonst Gruppennummer wählen
+  if (G && G.prog && !G.prog.finishedAt && G.adv === egCfg.adv && (G.mode || "stations") === egCfg.mode) { escCtx = escCtxGroup(); showView("escPlay", { noPush: true }); }
+  else showView("escGroupSetup", { noPush: true });
+}
+else if (G && G.prog && !G.prog.finishedAt) { escCtx = escCtxGroup(); showView("escPlay", { noPush: true }); }
 else showView("home", { noPush: true });
 
 if ("serviceWorker" in navigator) {
