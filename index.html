@@ -171,6 +171,10 @@
   .lesson-bar .lb-time { font-variant-numeric: tabular-nums; font-weight: 700; }
   .lesson-bar .over { color: var(--warn); }
   .lesson-bar .btn { min-height: 36px; padding: 6px 12px; }
+  .lesson-bar .lb-tip { flex-basis: 100%; color: var(--muted); font-size: 0.9rem; }
+  .quick { width: 100%; min-height: 96px; font-size: 1.5rem; margin-bottom: 14px; }
+  .quick small { font-size: 0.95rem; }
+  .more-box > summary { cursor: pointer; font-weight: 600; color: var(--muted); padding: 10px 4px 14px; list-style-position: inside; }
 
   /* Plan */
   .phase {
@@ -481,6 +485,10 @@
 
     <div id="continueBox"></div>
 
+    <button class="btn btn-big btn-primary quick" data-act="quickOpen">⚡ 45 Minuten – los!<small>Teamquiz und Schätzduell. Nur Beamer nötig, die App leitet Schritt für Schritt an.</small></button>
+
+    <details class="more-box" id="moreBox">
+    <summary>Mehr: Klasse, Teams und alle Spiele einzeln</summary>
     <div class="card">
       <h2>1 · Stufe</h2>
       <div class="chips" id="stufeChips"></div>
@@ -510,9 +518,10 @@
       </div>
       <button class="btn btn-outline" style="width:100%;margin-top:10px" data-act="openPodium">🏆 Rangliste</button>
     </div>
+    </details>
 
     <p class="privacy">🔒 Die App speichert nur Teamnamen und Punkte auf diesem Gerät, keine Namen von Schülerinnen und Schülern. Sie funktioniert auch offline.</p>
-    <div id="appVersionLabel">v8 · 2026-10-26</div>
+    <div id="appVersionLabel">v9 · 2026-10-26</div>
   </section>
 
   <!-- Lektions-Assistent -->
@@ -1108,17 +1117,21 @@ const FOCI = [
   { id: "mathe", name: "🧮 Mathe & Logik" },
   { id: "deutsch", name: "📚 Deutsch" },
   { id: "fr", name: "🇫🇷 Französisch" },
+  { id: "en", name: "🇬🇧 Englisch" },
+  { id: "nt", name: "🔬 Natur & Technik" },
+  { id: "rzg", name: "🗺️ Geografie & Geschichte" },
+  { id: "mi", name: "💻 Medien & Informatik" },
 ];
 
 const CATS = [
-  { id: "schweiz", name: "Schweiz", icon: "🇨🇭", focus: "aw" },
-  { id: "welt", name: "Welt & Geografie", icon: "🌍", focus: "aw" },
-  { id: "natur", name: "Natur & Körper", icon: "🔬", focus: "aw" },
-  { id: "geschichte", name: "Geschichte", icon: "🏛️", focus: "aw" },
+  { id: "schweiz", name: "Schweiz", icon: "🇨🇭", focus: "aw", also: ["rzg"] },
+  { id: "welt", name: "Welt & Geografie", icon: "🌍", focus: "aw", also: ["rzg"] },
+  { id: "natur", name: "Natur & Körper", icon: "🔬", focus: "aw", also: ["nt"] },
+  { id: "geschichte", name: "Geschichte", icon: "🏛️", focus: "aw", also: ["rzg"] },
   { id: "kultur", name: "Sport & Kultur", icon: "🎭", focus: "aw" },
   { id: "kopf", name: "Kopfrechnen", icon: "🧮", focus: "mathe", gen: genKopf },
   { id: "folgen", name: "Zahlenfolgen", icon: "🔢", focus: "mathe", gen: genFolge },
-  { id: "einheiten", name: "Masse & Einheiten", icon: "📐", focus: "mathe", gen: genEinheit },
+  { id: "einheiten", name: "Masse & Einheiten", icon: "📐", focus: "mathe", gen: genEinheit, also: ["nt"] },
   { id: "knobeln", name: "Knobeln", icon: "🧩", focus: "mathe" },
   { id: "redewendungen", name: "Redewendungen", icon: "💬", focus: "deutsch" },
   { id: "rechtschreibung", name: "Rechtschreibung", icon: "✏️", focus: "deutsch" },
@@ -1132,6 +1145,15 @@ const CATS = [
   { id: "fr-imp", name: "Imparfait", icon: "🇫🇷", focus: "fr", gen: (L) => genFr("imp", L), noStufe: true },
   { id: "fr-fs", name: "Futur simple", icon: "🇫🇷", focus: "fr", gen: (L) => genFr("fs", L), noStufe: true },
   { id: "fr-mix", name: "Alle Zeiten", icon: "🇫🇷", focus: "fr", gen: (L) => genFr("mix", L), noStufe: true },
+  // neue Kategorien immer hinten anhängen: Klassenrunde-Codes verweisen auf die Position (README, Stolpersteine)
+  { id: "en-irr", name: "Irregular verbs", icon: "🇬🇧", focus: "en", gen: genEnIrr, noStufe: true },
+  { id: "en-vocab", name: "Wörter & False Friends", icon: "🇬🇧", focus: "en" },
+  { id: "en-gram", name: "English grammar", icon: "🇬🇧", focus: "en" },
+  { id: "en-land", name: "UK & USA", icon: "🇬🇧", focus: "en" },
+  { id: "physik", name: "Physik & Chemie", icon: "⚗️", focus: "nt" },
+  { id: "informatik", name: "Informatik", icon: "💻", focus: "mi" },
+  { id: "binaer", name: "Binärzahlen", icon: "0️⃣", focus: "mi", gen: genBin },
+  { id: "medien", name: "Medien & Sicherheit", icon: "📱", focus: "mi" },
 ];
 const CAT_BY_ID = Object.fromEntries(CATS.map((c) => [c.id, c]));
 
@@ -1292,6 +1314,98 @@ const BANK = {
     [3, "Wie viele Spielerinnen oder Spieler pro Team sind beim Handball auf dem Feld (mit Torhüter)?", "7"],
     [4, "Welche Sinfonie von Beethoven beginnt mit dem berühmten «ta-ta-ta-taaa»?", "Die 5. Sinfonie (Schicksalssinfonie)", ["Die 3. Sinfonie", "Die 7. Sinfonie", "Die 9. Sinfonie"]],
     [5, "Welches Basler Architekturbüro entwarf das Olympiastadion in Peking («Vogelnest») mit?", "Herzog & de Meuron"],
+  ],
+  "en-vocab": [
+    [1, "Was heisst «Montag» auf Englisch?", "Monday", ["Sunday", "Tuesday", "Thursday"]],
+    [1, "Was heisst «rot» auf Englisch?", "red", ["read", "rot", "rat"]],
+    [1, "Was heisst «Küche» auf Englisch?", "kitchen", ["chicken", "kitten", "kettle"]],
+    [2, "Was heisst «Mittwoch» auf Englisch?", "Wednesday", ["Thursday", "Tuesday", "Friday"]],
+    [2, "Was heisst «Schmetterling» auf Englisch?", "butterfly", ["dragonfly", "ladybird", "moth"]],
+    [2, "Wie sagt man «Ich bin 13 Jahre alt»?", "I am 13 years old.", ["I have 13 years.", "I am 13 years.", "I have 13 years old."]],
+    [3, "Was bedeutet «to become»?", "werden", ["bekommen", "benehmen", "bequem sein"]],
+    [3, "Was bedeutet «gift»?", "Geschenk", ["Gift", "Geld", "Glück"]],
+    [3, "Was heisst «Bibliothek» auf Englisch?", "library", ["bookshop", "bookcase", "liberty"]],
+    [4, "Was bedeutet «chef»?", "Koch / Köchin", ["Chef / Chefin", "Kellner / Kellnerin", "Bäcker / Bäckerin"]],
+    [4, "Was bedeutet «eventually»?", "schliesslich", ["eventuell", "ewig", "sofort"]],
+    [4, "Was bedeutet «sensible»?", "vernünftig", ["sensibel", "sinnlos", "empfindlich"]],
+    [5, "Was bedeutet «actually»?", "tatsächlich", ["aktuell", "aktiv", "momentan"]],
+    [5, "Was bedeutet «to stare»?", "anstarren", ["starten", "stören", "staunen"]],
+    [5, "Was heisst «Gewitter» auf Englisch?", "thunderstorm", ["weather", "hailstorm", "lightning"]],
+  ],
+  "en-gram": [
+    [1, "«He … football every Saturday.»", "plays", ["play", "playing", "is play"]],
+    [1, "«… you like pizza?»", "Do", ["Does", "Are", "Is"]],
+    [2, "«She … to school yesterday.»", "went", ["goes", "go", "has gone"]],
+    [2, "Mehrzahl von «child»?", "children", ["childs", "childen", "childrens"]],
+    [2, "«I have got … apple.»", "an", ["a", "many", "much"]],
+    [3, "«big – bigger – …»", "biggest", ["bigest", "most big", "more bigger"]],
+    [3, "«Look! It … .»", "is raining", ["rains", "rain", "rained"]],
+    [3, "«There isn't … milk left.»", "any", ["some", "many", "a"]],
+    [4, "«I … in Zurich since 2020.»", "have lived", ["live", "am living", "lived"]],
+    [4, "«If it rains tomorrow, we … at home.»", "will stay", ["would stay", "stayed", "staying"]],
+    [4, "Mehrzahl von «mouse»?", "mice", ["mouses", "mices", "meese"]],
+    [5, "«This is the boy … father is a pilot.»", "whose", ["who", "which", "who's"]],
+    [5, "«I wish I … more time.»", "had", ["have", "would have", "has"]],
+    [5, "«The letter … yesterday.»", "was sent", ["sent", "has been sent", "is sent"]],
+  ],
+  "en-land": [
+    [1, "Wie heisst die Hauptstadt des Vereinigten Königreichs?", "London", ["Manchester", "Edinburgh", "Dublin"]],
+    [1, "Welche Farbe haben die berühmten Doppeldeckerbusse in London?", "Rot", ["Blau", "Gelb", "Grün"]],
+    [2, "Wie heisst die Hauptstadt der USA?", "Washington, D.C.", ["New York", "Los Angeles", "Chicago"]],
+    [2, "Wie viele Bundesstaaten haben die USA?", "50"],
+    [2, "In welcher Stadt steht die Freiheitsstatue?", "New York", ["Washington, D.C.", "Boston", "Chicago"]],
+    [3, "Wie heisst die Hauptstadt von Schottland?", "Edinburgh", ["Glasgow", "Aberdeen", "Dublin"]],
+    [3, "Welche Währung hat das Vereinigte Königreich?", "Pfund (Pfund Sterling)", ["Euro", "Dollar", "Krone"]],
+    [3, "Auf welcher Strassenseite fährt man in Grossbritannien?", "Links", ["Rechts", "In der Mitte", "Je nach Stadt"]],
+    [4, "Wie heisst der Fluss, der durch London fliesst?", "Themse (Thames)", ["Seine", "Shannon", "Severn"]],
+    [4, "Welches Land gehört NICHT zum Vereinigten Königreich?", "Irland", ["Schottland", "Wales", "Nordirland"]],
+    [4, "In welchem US-Bundesstaat liegt Hollywood?", "Kalifornien", ["Florida", "Texas", "New York"]],
+    [5, "Wer schrieb «Romeo und Julia»?", "William Shakespeare", ["Charles Dickens", "Oscar Wilde", "J. K. Rowling"]],
+    [5, "In welchem Jahr erklärten die USA ihre Unabhängigkeit?", "1776", ["1492", "1789", "1865"]],
+    [5, "Welche britische Königin oder welcher König regierte am längsten?", "Elizabeth II.", ["Victoria", "Heinrich VIII.", "Charles III."]],
+  ],
+  physik: [
+    [1, "Bei wie viel Grad Celsius gefriert Wasser (bei normalem Luftdruck)?", "0"],
+    [1, "Bei wie viel Grad Celsius siedet Wasser auf Meereshöhe?", "100"],
+    [1, "Was zieht ein Magnet an?", "Eisen", ["Aluminium", "Kupfer", "Holz"]],
+    [2, "Welche chemische Formel hat Wasser?", "H₂O", ["CO₂", "O₂", "H₂O₂"]],
+    [2, "Wie nennt man den Übergang von flüssig zu gasförmig?", "Verdampfen", ["Schmelzen", "Kondensieren", "Erstarren"]],
+    [2, "Welches Gas brauchen wir zum Atmen?", "Sauerstoff", ["Stickstoff", "Kohlendioxid", "Helium"]],
+    [3, "Welches Gas macht den grössten Teil der Luft aus?", "Stickstoff", ["Sauerstoff", "Kohlendioxid", "Argon"]],
+    [3, "In welcher Einheit misst man die elektrische Spannung?", "Volt", ["Ampere", "Watt", "Ohm"]],
+    [3, "Was ist schwerer: 1 Liter Wasser oder 1 Liter Speiseöl?", "1 Liter Wasser", ["1 Liter Speiseöl", "Beide sind gleich schwer", "Das kommt auf das Gefäss an"]],
+    [4, "Welchen pH-Wert hat reines Wasser?", "7"],
+    [4, "In welcher Einheit misst man eine Kraft?", "Newton", ["Joule", "Pascal", "Watt"]],
+    [4, "Wie heissen die negativ geladenen Teilchen in der Hülle eines Atoms?", "Elektronen", ["Protonen", "Neutronen", "Ionen"]],
+    [5, "Wie berechnet man die Geschwindigkeit?", "v = s : t (Weg durch Zeit)", ["v = s · t (Weg mal Zeit)", "v = t : s (Zeit durch Weg)", "v = m · a (Masse mal Beschleunigung)"]],
+    [5, "Wie viele chemische Elemente sind heute bekannt?", "118"],
+    [5, "Was entsteht, wenn Wasserstoff verbrennt?", "Wasser", ["Kohlendioxid", "Rauch", "Helium"]],
+  ],
+  informatik: [
+    [1, "Wie viele Bits hat ein Byte?", "8"],
+    [1, "Mit welcher Tastenkombination kopiert man am Windows-PC markierten Text?", "Ctrl + C", ["Ctrl + V", "Ctrl + X", "Ctrl + Z"]],
+    [2, "Wofür steht «WLAN»?", "Wireless Local Area Network", ["Wide Line Access Net", "Web Link Area Network", "Wireless Long Access Node"]],
+    [2, "Wofür steht «www» in Internetadressen?", "World Wide Web", ["World Wide Wireless", "Web With Windows", "Wide WebWorld"]],
+    [3, "Was ist ein Algorithmus?", "Eine genaue Schritt-für-Schritt-Anleitung, um ein Problem zu lösen", ["Ein Bauteil im Computer", "Ein Computervirus", "Eine Programmiersprache"]],
+    [3, "Was ist eine «Schleife» beim Programmieren?", "Befehle, die mehrmals wiederholt werden", ["Ein Fehler im Programm", "Ein Kabel zwischen zwei Computern", "Ein Ordner für Dateien"]],
+    [4, "Wie viele verschiedene Werte kann man mit 8 Bits darstellen?", "256"],
+    [4, "Was ist ein «Cookie» im Internet?", "Eine kleine Datei, in der eine Website Daten im Browser speichert", ["Ein Werbebanner", "Ein Virus aus dem Internet", "Ein Passwort-Speicher im Router"]],
+    [5, "Wer gilt als erste Programmiererin der Geschichte?", "Ada Lovelace", ["Grace Hopper", "Marie Curie", "Hedy Lamarr"]],
+    [2, "Wie heisst die kleinste Informationseinheit, die nur 0 oder 1 sein kann?", "Bit", ["Byte", "Pixel", "Chip"]],
+    [5, "Welche Zahl im Zehnersystem ist die Binärzahl 11111111?", "255"],
+  ],
+  medien: [
+    [1, "Ab welchem Alter darf man laut Nutzungsbedingungen ein eigenes Instagram-Konto eröffnen?", "13"],
+    [1, "Welches Passwort ist am sichersten?", "Ein langer Satz wie «Mein Hund isst 3 Äpfel!»", ["Der eigene Vorname", "123456", "Das eigene Geburtsdatum"]],
+    [2, "Darf man Fotos von anderen Personen ohne ihre Erlaubnis online stellen?", "Nein, man braucht ihre Erlaubnis", ["Ja, immer", "Ja, wenn sie gut aussehen", "Ja, aber nur in Gruppenchats"]],
+    [2, "Was sind «Fake News»?", "Absichtlich falsche Nachrichten", ["Sehr neue Nachrichten", "Lustige Videos", "Nachrichten aus dem Ausland"]],
+    [3, "Was bedeutet «Phishing»?", "Mit gefälschten Nachrichten Passwörter oder Daten stehlen", ["Online Fische kaufen", "Viele Werbe-E-Mails verschicken", "Ein Spiel herunterladen"]],
+    [3, "Was tust du, wenn dich jemand online beleidigt oder bedroht?", "Screenshot machen, blockieren und einer Vertrauensperson zeigen", ["Zurück beleidigen", "Nichts sagen und es aushalten", "Das eigene Konto sofort löschen"]],
+    [4, "Was bedeutet das Schloss-Symbol 🔒 (https) in der Adresszeile?", "Die Verbindung ist verschlüsselt", ["Die Website ist garantiert vertrauenswürdig", "Die Website kostet etwas", "Die Website ist gesperrt"]],
+    [4, "Was ist ein «Deepfake»?", "Ein mit KI gefälschtes Video oder Bild, das echt wirkt", ["Ein besonders scharfes Foto", "Ein Unterwasser-Video", "Ein gelöschter Beitrag"]],
+    [4, "Was solltest du prüfen, bevor du eine Nachricht weiterleitest?", "Wer sie veröffentlicht hat und ob seriöse Quellen dasselbe berichten", ["Ob sie viele Likes hat", "Ob sie lustig ist", "Ob sie von einer Freundin oder einem Freund kommt"]],
+    [5, "Was ist eine «Filterblase»?", "Man sieht online vor allem Inhalte, die zur eigenen Meinung passen", ["Ein Schutzprogramm gegen Viren", "Ein Foto-Filter in Apps", "Ein gesperrter Chat"]],
+    [5, "Wer ist für einen Beitrag verantwortlich, den du teilst?", "Auch du selbst", ["Nur die Person, die ihn zuerst gepostet hat", "Nur die Plattform", "Niemand"]],
   ],
   knobeln: [
     [1, "Wie viele Monate haben 28 Tage?", "Alle 12"],
@@ -1986,6 +2100,45 @@ function genFr(tense, L) {
   return { q: `${FR_TENSES[tense]}: <b>${FR_PRON[pi]}</b> … (${v.inf})`, a, html: true, wrong };
 }
 
+/* Englisch: unregelmässige Verben (britisches Englisch), Schwierigkeit = Verbauswahl */
+const EN_IRR = [
+  [1, "go", "went", "gone", "gehen"], [1, "have", "had", "had", "haben"], [1, "do", "did", "done", "tun"], [1, "see", "saw", "seen", "sehen"],
+  [1, "come", "came", "come", "kommen"], [1, "make", "made", "made", "machen"], [1, "say", "said", "said", "sagen"], [1, "eat", "ate", "eaten", "essen"],
+  [1, "take", "took", "taken", "nehmen"],
+  [2, "give", "gave", "given", "geben"], [2, "know", "knew", "known", "wissen, kennen"], [2, "write", "wrote", "written", "schreiben"], [2, "buy", "bought", "bought", "kaufen"],
+  [2, "drink", "drank", "drunk", "trinken"], [2, "swim", "swam", "swum", "schwimmen"], [2, "run", "ran", "run", "rennen"], [2, "sing", "sang", "sung", "singen"],
+  [2, "find", "found", "found", "finden"], [2, "think", "thought", "thought", "denken"], [2, "sleep", "slept", "slept", "schlafen"], [2, "meet", "met", "met", "treffen"],
+  [3, "bring", "brought", "brought", "bringen"], [3, "catch", "caught", "caught", "fangen"], [3, "teach", "taught", "taught", "unterrichten"], [3, "fly", "flew", "flown", "fliegen"],
+  [3, "forget", "forgot", "forgotten", "vergessen"], [3, "begin", "began", "begun", "beginnen"], [3, "break", "broke", "broken", "brechen"], [3, "choose", "chose", "chosen", "wählen"],
+  [3, "speak", "spoke", "spoken", "sprechen"], [3, "wear", "wore", "worn", "tragen (Kleider)"], [3, "feel", "felt", "felt", "fühlen"], [3, "leave", "left", "left", "verlassen"],
+  [4, "fall", "fell", "fallen", "fallen"], [4, "hide", "hid", "hidden", "verstecken"], [4, "ride", "rode", "ridden", "reiten, fahren"], [4, "steal", "stole", "stolen", "stehlen"],
+  [4, "throw", "threw", "thrown", "werfen"], [4, "grow", "grew", "grown", "wachsen"], [4, "draw", "drew", "drawn", "zeichnen"], [4, "shake", "shook", "shaken", "schütteln"],
+  [4, "bite", "bit", "bitten", "beissen"], [4, "lose", "lost", "lost", "verlieren"], [4, "hold", "held", "held", "halten"], [4, "understand", "understood", "understood", "verstehen"],
+  [5, "freeze", "froze", "frozen", "frieren"], [5, "seek", "sought", "sought", "suchen"], [5, "swear", "swore", "sworn", "schwören"], [5, "tear", "tore", "torn", "zerreissen"],
+  [5, "forbid", "forbade", "forbidden", "verbieten"], [5, "bend", "bent", "bent", "biegen"], [5, "lend", "lent", "lent", "ausleihen"], [5, "spend", "spent", "spent", "ausgeben"],
+  [5, "sink", "sank", "sunk", "sinken"], [5, "sting", "stung", "stung", "stechen"], [5, "dig", "dug", "dug", "graben"],
+];
+// typischer Fehler: regelmässig gebildet (goed, buyed, flied)
+const enRegular = (inf) => inf.endsWith("e") ? inf + "d" : /[^aeiou]y$/.test(inf) ? inf.slice(0, -1) + "ied" : inf + "ed";
+function genEnIrr(L) {
+  const lv = clamp(L, 1, 5);
+  const [, inf, past, pp, de] = pick(EN_IRR.filter((v) => v[0] <= lv && v[0] >= Math.max(1, lv - 1)));
+  const askPast = Math.random() < 0.5, a = askPast ? past : pp;
+  const out = [];
+  [enRegular(inf), askPast ? pp : past, inf, inf.endsWith("e") ? inf + "n" : inf + "en", past + "ed"].forEach((w) => { if (w !== a && !out.includes(w)) out.push(w); });
+  const wrong = shuffle(out.slice(0, 3));
+  return { q: `${askPast ? "Simple past" : "Past participle (3. Form)"} von <b>${inf}</b> (${de})`, a, html: true, wrong };
+}
+
+/* Medien & Informatik: Binärzahlen, Stufe L 1–6 */
+function genBin(L) {
+  const [lo, hi] = [[2, 7], [8, 15], [16, 31], [32, 63], [64, 127], [128, 255]][clamp(L, 1, 6) - 1];
+  const n = rnd(lo, hi), b = n.toString(2);
+  if (Math.random() < 0.5) return { q: `Binärzahl <b>${b}</b> im Zehnersystem?`, a: n, html: true };
+  const wrong = shuffle([n - 2, n - 1, n + 1, n + 2].filter((x) => x > 0).map((x) => x.toString(2))).slice(0, 3);
+  return { q: `Zahl <b>${n}</b> als Binärzahl?`, a: b, html: true, wrong };
+}
+
 /* =====================================================================
    Zustand (nur Teamnamen und Punkte – keine Personendaten)
    ===================================================================== */
@@ -2280,8 +2433,9 @@ RENDER.plan = function () {
        <button class="btn btn-danger" data-act="lessonStop">Lektion beenden</button>`
     : `<button class="btn btn-primary btn-big" data-act="lessonStart">▶ Lektion starten</button>`;
 };
-function lessonStart() {
-  S.lesson = buildLesson(S.planCfg.dur, S.planCfg.focus, S.planCfg.type);
+function lessonStart(cfg = S.planCfg, quick = false) {
+  S.lesson = buildLesson(cfg.dur, cfg.focus, cfg.type);
+  S.lesson.quick = quick;
   S.lesson.startedAt = Date.now();
   S.teams.forEach((t) => { t.score = 0; });
   S.quiz = null; S.est = null; S.bo = null; S.words = null; S.who = null; S.logic = null; S.esc = null;
@@ -2296,10 +2450,16 @@ function startPhase(i) {
   if (p.kind === "teams") showView("teams");
   else if (p.kind === "quiz") {
     if (S.quiz && S.quiz.phase === i && !S.quiz.finished) showView("board");
-    else { quizSetupPrefill({ focus: L.focus, rows: p.cfg.rows, phase: i }); showView("quizSetup"); }
+    else {
+      quizSetupPrefill({ focus: L.focus, rows: p.cfg.rows, phase: i });
+      if (L.quick) { qsCfg.mode = "turn"; qsCfg.timer = 30; quizCreate(); } else showView("quizSetup");
+    }
   } else if (p.kind === "est") {
     if (S.est && S.est.phase === i && !S.est.finished) showView("est");
-    else { estSetupPrefill({ n: p.cfg.n, phase: i }); showView("estSetup"); }
+    else {
+      estSetupPrefill({ n: p.cfg.n, phase: i });
+      if (L.quick) { esCfg.timer = 60; estCreate(); } else showView("estSetup");
+    }
   } else if (p.kind === "breakout") {
     if (S.bo && S.bo.phase === i && !S.bo.finished) showView("breakout");
     else { boCfg.dur = p.min; boCfg.phase = i; showView("boSetup"); }
@@ -2324,6 +2484,17 @@ function nextPhase() {
   else { L.done = true; save(); showView("home"); toast("Lektion beendet. Danke fürs Mitmachen!"); }
 }
 function lessonActive() { return S.lesson && S.lesson.startedAt && !S.lesson.done; }
+// «45 Minuten – los!»: eine Zeile Anleitung für die Lehrperson, passend zur Ansicht
+function coachTip() {
+  if (!S.lesson.quick) return "";
+  const n = S.teams.length;
+  if (currentView === "teams") return `👉 Klasse in ${n} Teams einteilen (abzählen 1 bis ${n}), Tische zusammenschieben, Regeln vorlesen. Dann «Los geht's».`;
+  if (currentView === "board") return "👉 Das markierte Team wählt eine Kategorie und eine Punktzahl. Dieses Feld antippen. Höhere Zahl = schwierigere Frage.";
+  if (currentView === "question") return "👉 Frage vorlesen, Team antwortet laut. Unsicher, ob es stimmt? «Lösung zeigen» antippen, dann die Punkte geben.";
+  if (currentView === "est") return "👉 Jedes Team schreibt eine Zahl auf ein Blatt. Die Zahlen eintippen, dann «Auflösen». Wer am nächsten liegt, gewinnt.";
+  if (currentView === "podium") return "👉 Gewinnerteam applaudieren lassen, Tische zurückstellen. Dann «Lektion beenden».";
+  return "";
+}
 function renderLessonBar() {
   const bar = $("#lessonBar");
   if (!lessonActive() || currentView === "home") { bar.hidden = true; return; }
@@ -2335,7 +2506,8 @@ function renderLessonBar() {
   bar.innerHTML = `<span class="lb-main" data-act="openPlan" role="button" tabindex="0">📋 Phase ${L.idx + 1}/${L.phases.length} · ${PHASES[p.kind].icon} ${PHASES[p.kind].title}</span>
     <span class="lb-time ${phaseLeft < 0 ? "over" : ""}" title="Restzeit dieser Phase">${phaseLeft < 0 ? "+" + fmtClock(-phaseLeft) : fmtClock(phaseLeft)}</span>
     <span class="muted small">Lektion: ${totalLeft < 0 ? "+" + fmtClock(-totalLeft) : fmtClock(totalLeft)}</span>
-    <button class="btn btn-primary" data-act="nextPhase">${last ? "Lektion beenden ✓" : "Nächste Phase ▸"}</button>`;
+    <button class="btn btn-primary" data-act="nextPhase">${last ? "Lektion beenden ✓" : "Nächste Phase ▸"}</button>
+    ${coachTip() ? `<span class="lb-tip">${coachTip()}</span>` : ""}`;
 }
 setInterval(() => { if (lessonActive()) renderLessonBar(); }, 1000);
 
@@ -2349,7 +2521,7 @@ RENDER.teams = function () {
    Teamquiz
    ===================================================================== */
 let qsCfg = { focus: "mix", cats: [], rows: 4, mode: "turn", timer: 30, phase: null };
-function catsForFocus(focus) { return CATS.filter((c) => focus === "mix" || c.focus === focus); }
+function catsForFocus(focus) { return CATS.filter((c) => focus === "mix" || c.focus === focus || (c.also || []).includes(focus)); }
 function randomCats(focus, n, avoid = []) {
   if (focus === "mix") {
     // ausgewogen: Allgemeinwissen, Mathe und Deutsch abwechselnd
@@ -4039,6 +4211,19 @@ RENDER.podium = function () {
 /* =====================================================================
    Einstellungen
    ===================================================================== */
+function openQuick() {
+  const running = lessonActive() || S.teams.some((t) => t.score);
+  openModal(`<h2>⚡ 45 Minuten – los!</h2>
+    <span class="field-label">Welche Klasse?</span>
+    <div class="chips">${[7, 8, 9].map((v) => `<button class="chip${S.stufe === v ? " on" : ""}" data-act="quickStufe" data-v="${v}">${v}. Klasse</button>`).join("")}</div>
+    <span class="field-label">Welches Fach? <span class="muted small">(Teamquiz)</span></span>
+    <div class="chips">${FOCI.map((f) => `<button class="chip${(S.quickFocus || "mix") === f.id ? " on" : ""}" data-act="quickFocus" data-v="${f.id}">${f.name}</button>`).join("")}</div>
+    <span class="field-label">Wie viele Teams?</span>
+    <span class="stepper"><button data-act="quickTeams" data-d="-1" aria-label="Ein Team weniger">−</button><span>${S.teams.length}</span><button data-act="quickTeams" data-d="1" aria-label="Ein Team mehr">+</button></span>
+    <p class="hint">Ablauf: Teams bilden (5′) · Teamquiz (20′) · Schätzduell zum Allgemeinwissen (12′) · Siegerehrung (4′). Die App sagt dir bei jedem Schritt, was zu tun ist.</p>
+    ${running ? `<p class="hint">Punkte und eine laufende Lektion werden zurückgesetzt.</p>` : ""}
+    <div class="btn-row"><button class="btn" data-act="closeModal">Abbrechen</button><button class="btn btn-primary btn-big" style="flex:1" data-act="quickGo">▶ Starten</button></div>`);
+}
 function openSettings() {
   let theme = "auto"; try { theme = localStorage.getItem("sv_theme") || "auto"; } catch (e) {}
   openModal(`<h2>⚙️ Einstellungen</h2>
@@ -4105,6 +4290,11 @@ const ACTIONS = {
     } else lessonStart();
   },
   lessonStartYes: () => { closeModal(); lessonStart(); },
+  quickOpen: openQuick,
+  quickFocus: (b) => { S.quickFocus = b.dataset.v; save(); openQuick(); },
+  quickStufe: (b) => { S.stufe = Number(b.dataset.v); save(); openQuick(); },
+  quickTeams: (b) => { S.teams = makeTeams(clamp(S.teams.length + Number(b.dataset.d), 2, 6), S.teams); save(); openQuick(); },
+  quickGo: () => { closeModal(); lessonStart({ dur: 45, focus: S.quickFocus || "mix", type: "quiz" }, true); },
   lessonStop: () => { S.lesson.done = true; save(); showView("plan", { noPush: true }); },
   startPhase: (b) => startPhase(Number(b.dataset.i)),
   nextPhase,

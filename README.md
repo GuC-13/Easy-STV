@@ -6,15 +6,19 @@ Ein Gerät am Beamer genügt. Keine Anmeldung, keine Schülerdaten, funktioniert
 ## In 60 Sekunden startklar
 
 1. App im Browser öffnen (Safari, Chrome, Edge) und das Gerät an den Beamer hängen.
-2. **Stufe** wählen, **Anzahl Teams** einstellen.
-3. **🧭 Lektion planen** → Programm und Dauer (30/45/90 Min.) wählen → **Lektion starten**.
-   Die App führt Phase für Phase durch die Lektion, inklusive Pausen und Siegerehrung.
+2. **⚡ 45 Minuten – los!** antippen, Klasse, Fach und Anzahl Teams wählen, **Starten**.
+3. Die App führt durch die Lektion: Teams bilden → Teamquiz → Schätzduell → Siegerehrung.
+   Oben steht bei jedem Schritt in einer Zeile, was zu tun ist; «Nächste Phase ▸» geht weiter.
 
-Wer lieber einzelne Spiele will, findet sie unter «Los geht's»:
+Fächer: Gemischt, Allgemeinwissen, Mathe & Logik, Deutsch, Französisch, Englisch, Natur & Technik,
+Geografie & Geschichte, Medien & Informatik.
+
+Wer selber zusammenstellen will (30/90 Minuten, kreative Lektionen, Breakout-Room), öffnet
+**Mehr: Klasse, Teams und alle Spiele einzeln** und wählt **🧭 Lektion planen** oder ein einzelnes Spiel:
 
 | Format | Wofür |
 |---|---|
-| 🎯 Teamquiz | Spielfeld mit Kategorien und Punktwerten (Allgemeinwissen, Mathe, Deutsch, Französisch) |
+| 🎯 Teamquiz | Spielfeld mit Kategorien und Punktwerten, in allen Fächern oben |
 | 📏 Schätzduell | Teams schätzen Zahlen, wer am nächsten liegt, gewinnt |
 | 📱 Klassenrunde | Alle spielen auf dem eigenen iPad mit (QR-Code scannen) |
 | 🎨 Teamauftrag | Kreative Gruppenarbeit mit Präsentation und Abstimmung |
@@ -47,8 +51,9 @@ kommen per QR-Code zurück zur Lehrperson. Fantasienamen verwenden, keine Namen 
   Steht die Uhr eines iPads falsch, ist es im Takt verschoben → «Datum & Uhrzeit» auf automatisch stellen.
 - **Klassenrunde: gleiche App-Version.** Die Fragen werden auf jedem Gerät aus dem QR-Code neu erzeugt. Haben
   Lehrperson und SuS verschiedene Versionen, meldet das iPad «Andere App-Version» → neu laden, nochmals scannen.
-  Darum Fragenbanken nie mitten im Schuljahr umsortieren (Fragen werden über ihre Position referenziert);
-  neue Fragen immer **ans Ende** einer Kategorie anhängen.
+  Darum Fragenbanken nie mitten im Schuljahr umsortieren (Fragen und Kategorien werden über ihre Position
+  referenziert); neue Fragen immer **ans Ende** einer Kategorie anhängen, neue Kategorien ans Ende von `CATS`.
+  Eine Kategorie kann mit `also: ["nt"]` zusätzlich in einem weiteren Fach erscheinen.
 - **Geteilte iPads:** Im eigenen Tempo kann nach dem Einsammeln «Nächste Person auf diesem iPad» gewählt werden.
 - **Offline:** Der Service Worker holt zuerst aus dem Netz und fällt ohne Verbindung auf den Cache zurück.
   Ohne diesen Rückfall startet die App offline nicht.

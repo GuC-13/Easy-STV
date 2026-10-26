@@ -1,5 +1,5 @@
 // Bei jeder Änderung hochzählen und die Versionsanzeige in index.html (#appVersionLabel) mitziehen.
-const CACHE_NAME = "stellvertretung-cache-v8";
+const CACHE_NAME = "stellvertretung-cache-v9";
 const FILES_TO_CACHE = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./apple-touch-icon.png", "./icon-512.png"];
 
 self.addEventListener("install", (event) => {
