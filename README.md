@@ -27,6 +27,9 @@ Wer selber zusammenstellen will (30/90 Minuten, kreative Lektionen, Breakout-Roo
 | 🧠 Logikrätsel | Knobeln im Team |
 | 🚪 Breakout-Room | Rätselstationen, Tür für Tür (auch zum Ausdrucken) |
 
+**📋 Alle Fragen auf einen Blick:** [FRAGEN.md](FRAGEN.md), mit Anzahl pro Fach, Kategorie und Schwierigkeit.
+Nach Änderungen an den Fragen neu erzeugen: `node tools/fragen-tabelle.mjs`.
+
 **🤫 Spickzettel:** Lösungen per QR-Code aufs eigene Handy. Vorher die Bildschirmspiegelung beenden.
 
 ## Aufs iPad holen
