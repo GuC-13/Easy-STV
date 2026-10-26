@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Stellvertretung">
+<meta name="theme-color" content="#4f46e5">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Stellvertretung</title>
 <script>try { const t = localStorage.getItem("sv_theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}</script>
 <style>
@@ -507,7 +512,7 @@
     </div>
 
     <p class="privacy">🔒 Die App speichert nur Teamnamen und Punkte auf diesem Gerät, keine Namen von Schülerinnen und Schülern. Sie funktioniert auch offline.</p>
-    <div id="appVersionLabel">v2026-10-19.2</div>
+    <div id="appVersionLabel">v8 · 2026-10-26</div>
   </section>
 
   <!-- Lektions-Assistent -->
@@ -951,7 +956,7 @@ function fmtClock(sec) {
 function parseNum(raw) {
   if (raw == null) return null;
   const s = String(raw).trim().replace(/['’\s]/g, "").replace(",", ".");
-  if (s === "") return null; // Number("") wäre 0 (STOLPERSTEINE)
+  if (s === "") return null; // Number("") wäre 0 (README, Stolpersteine)
   const n = Number(s);
   return Number.isFinite(n) ? n : null;
 }
@@ -3836,8 +3841,9 @@ let KP = null, KQ = null;
 function krLoadPlayer() { try { const p = JSON.parse(localStorage.getItem(KR_PLAYER_KEY)); if (p && p.P && Array.isArray(p.P.q)) return p; } catch (e) {} return null; }
 function krSavePlayer() { try { if (KP) localStorage.setItem(KR_PLAYER_KEY, JSON.stringify(KP)); else localStorage.removeItem(KR_PLAYER_KEY); } catch (e) {} }
 const krRandomName = () => `${pick(KR_ADJ)} ${pick(KR_ANIMAL)} ${rnd(10, 99)}`;
+const krNewPlayer = (P) => ({ P, dev: Math.random().toString(36).slice(2, 8), name: krRandomName(), team: P.tm.length ? -1 : null, ready: false, ans: {}, cur: 0 });
 function krJoin(P) {
-  if (!KP || KP.P.r !== P.r) KP = { P, dev: Math.random().toString(36).slice(2, 8), name: krRandomName(), team: P.tm.length ? -1 : null, ready: false, ans: {}, cur: 0 };
+  if (!KP || KP.P.r !== P.r) KP = krNewPlayer(P);
   krSavePlayer();
   KQ = krBuild(KP.P);
 }
@@ -3882,7 +3888,8 @@ RENDER.krPlay = function () {
       <button class="btn btn-primary btn-big" data-act="krReady" ${P.tm.length && KP.team < 0 ? "disabled" : ""}>✓ Bereit</button></div>`;
   } else if (ph.st === "wait") {
     html = `<div class="card" style="text-align:center"><p class="muted" style="margin:0">${esc(KP.name)}${KP.team != null && KP.team >= 0 ? ` · ${esc(P.tm[KP.team])}` : ""}</p>
-      <p class="big-prompt">Gleich geht's los!</p><div class="kr-score" id="krClock">${fmtClock(ph.left)}</div></div>`;
+      <p class="big-prompt">Gleich geht's los!</p><div class="kr-score" id="krClock">${fmtClock(ph.left)}</div>
+      <p class="hint">Zeigt der Beamer eine andere Zeit? Dann in den iPad-Einstellungen «Datum &amp; Uhrzeit» auf automatisch stellen.</p></div>`;
   } else if (ph.st === "q" || ph.st === "rev" || ph.st === "fq") {
     const i = ph.i, q = KQ[i], a = KP.ans[i];
     const showResult = ph.st === "rev" || (ph.st === "fq" && a);
@@ -3910,7 +3917,8 @@ RENDER.krPlay = function () {
     const code = ["SVKR1", P.r, KP.dev, team, KP.name, pts, ok, n, krChk(P.r, KP.dev, team, pts, ok, P.s)].join("|");
     html = `<div class="card" style="text-align:center"><p class="muted" style="margin:0">${esc(KP.name)}${team !== "" ? ` · ${esc(P.tm[team])}` : ""}</p>
       <div class="kr-score">${pts} Punkte</div><p style="margin:0">${ok} von ${n} richtig</p>
-      ${QR.svg(code)}<p class="hint">Zeig diesen Code der Lehrperson zum Einsammeln.</p></div>`;
+      ${QR.svg(code)}<p class="hint">Zeig diesen Code der Lehrperson zum Einsammeln.</p>
+      ${P.m === "t" ? "" : `<button class="btn btn-ghost" data-act="krNextPerson">👥 Nächste Person auf diesem iPad</button>`}</div>`;
   }
   $("#krPlayBody").innerHTML = html;
   $("#krPlayTitle").textContent = "📱 Klassenrunde";
@@ -3983,6 +3991,10 @@ const KR_ACTIONS = {
   krPickOpt: (b) => krAnswer(Number(b.dataset.v)),
   krSubmitNum: () => krAnswer($("#krNumIn").value),
   krNext: () => { KP.cur++; krSavePlayer(); RENDER.krPlay(); },
+  // geteilte iPads: Ergebnis der vorherigen Person muss vorher eingesammelt sein
+  krNextPerson: () => openModal(`<h2>Nächste Person?</h2><p>Hat die Lehrperson deinen Ergebnis-Code schon eingesammelt? Danach ist er auf diesem iPad weg.</p>
+    <div class="btn-row"><button class="btn" data-act="closeModal">Abbrechen</button><button class="btn btn-primary" data-act="krNextPersonYes">Ja, nächste Person</button></div>`),
+  krNextPersonYes: () => { KP = krNewPlayer(KP.P); krSavePlayer(); closeModal(); RENDER.krPlay(); },
   krReload: () => location.reload(),
   krQuit: () => openModal(`<h2>Klassenrunde verlassen?</h2><p>Deine Antworten auf diesem iPad werden gelöscht.</p>
     <div class="btn-row"><button class="btn" data-act="closeModal">Weiterspielen</button><button class="btn btn-danger" data-act="krQuitYes">Verlassen</button></div>`),

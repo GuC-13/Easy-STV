@@ -1,5 +1,6 @@
-const CACHE_NAME = "stellvertretung-cache-v7";
-const FILES_TO_CACHE = ["./", "./index.html"];
+// Bei jeder Änderung hochzählen und die Versionsanzeige in index.html (#appVersionLabel) mitziehen.
+const CACHE_NAME = "stellvertretung-cache-v8";
+const FILES_TO_CACHE = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./apple-touch-icon.png", "./icon-512.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(FILES_TO_CACHE)));
@@ -19,7 +20,7 @@ self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
   // Zuerst Netz (Updates kommen sofort an), ohne Verbindung aus dem Cache –
-  // sonst startet die App offline nicht (siehe STOLPERSTEINE.md).
+  // sonst startet die App offline nicht (siehe README, Stolpersteine).
   event.respondWith(
     fetch(event.request)
       .then((response) => {

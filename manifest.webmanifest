@@ -1,0 +1,16 @@
+{
+  "name": "Stellvertretung",
+  "short_name": "Stellvertretung",
+  "description": "Lustig und lehrreich, ohne Vorbereitung: Spiele und Lektionsabläufe für Stellvertretungen.",
+  "lang": "de",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f1f5f9",
+  "theme_color": "#4f46e5",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}
