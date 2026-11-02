@@ -233,6 +233,7 @@
   .team-btn { border: 0; color: #fff; border-radius: 12px; padding: 10px 16px; font-weight: 700; min-height: 48px; font-size: 1.05rem; }
   .team-btn.first { outline: 3px solid var(--text); outline-offset: 2px; }
   .team-btn:disabled { opacity: 0.3; cursor: default; }
+  .risk { margin: 0 0 10px; padding: 10px 14px; border-radius: 12px; border: 2px solid var(--text); font-size: 1.25rem; font-weight: 800; text-align: center; }
   .buzz-msg { font-size: clamp(1.3rem, 3vw, 2rem); font-weight: 800; text-align: center; padding: 10px; border-radius: 14px; color: #fff; }
 
   .countdown { display: flex; align-items: center; gap: 12px; margin-top: 18px; }
@@ -521,7 +522,7 @@
     </details>
 
     <p class="privacy">🔒 Die App speichert nur Teamnamen und Punkte auf diesem Gerät, keine Namen von Schülerinnen und Schülern. Sie funktioniert auch offline.</p>
-    <div id="appVersionLabel">v10 · 2026-10-26</div>
+    <div id="appVersionLabel">v11 · 2026-11-02</div>
   </section>
 
   <!-- Lektions-Assistent -->
@@ -2584,7 +2585,7 @@ function coachTip() {
   const n = S.teams.length;
   if (currentView === "teams") return `👉 Klasse in ${n} Teams einteilen (abzählen 1 bis ${n}), Tische zusammenschieben, Regeln vorlesen. Dann «Los geht's».`;
   if (currentView === "board") return "👉 Das markierte Team wählt eine Kategorie und eine Punktzahl. Dieses Feld antippen. Höhere Zahl = schwierigere Frage.";
-  if (currentView === "question") return "👉 Frage vorlesen, Team antwortet laut. Unsicher, ob es stimmt? «Lösung zeigen» antippen, dann die Punkte geben.";
+  if (currentView === "question") return "👉 Frage vorlesen, Team antwortet laut. Falsch? Andere Teams melden sich, ein Team antippen und werten: richtig halbe Punkte, falsch halbe Punkte Abzug.";
   if (currentView === "est") return "👉 Jedes Team schreibt eine Zahl auf ein Blatt. Die Zahlen eintippen, dann «Auflösen». Wer am nächsten liegt, gewinnt.";
   if (currentView === "podium") return "👉 Gewinnerteam applaudieren lassen, Tische zurückstellen. Dann «Lektion beenden».";
   return "";
@@ -2646,7 +2647,7 @@ RENDER.quizSetup = function () {
   $("#qsMode").innerHTML = [["turn", "🔁 Reihum"], ["buzzer", "🔔 Buzzer"]].map(([v, l]) =>
     `<button class="chip${qsCfg.mode === v ? " on" : ""}" data-act="qsMode" data-v="${v}">${l}</button>`).join("");
   $("#qsModeHint").textContent = qsCfg.mode === "turn"
-    ? "Die Teams wählen reihum eine Frage. Weiss das Team die Antwort nicht, darf die Lehrperson die Punkte einem anderen Team geben."
+    ? "Die Teams wählen reihum eine Frage. Antwortet das Team falsch, dürfen sich die anderen melden: Richtig gibt die halben Punkte, falsch kostet die halben Punkte."
     : "Alle Teams dürfen antworten. Wer zuerst seine Farbe am Tablet antippt (oder Taste 1–6 drückt), ist dran. Bei falscher Antwort sind die anderen dran.";
   $("#qsTimer").innerHTML = [[0, "Aus"], [20, "20 s"], [30, "30 s"], [60, "60 s"]].map(([v, l]) =>
     `<button class="chip${qsCfg.timer === v ? " on" : ""}" data-act="qsTimer" data-v="${v}">${l}</button>`).join("");
@@ -2709,7 +2710,7 @@ RENDER.board = function () {
     const val = (r + 1) * 100;
     if (cell.done) {
       const t = teamById(cell.by);
-      html += `<button class="cell done${t ? "" : " none"}" style="${t ? "background:" + t.color : ""}" data-act="cellReopen" data-r="${r}" data-c="${c}" aria-label="${val} Punkte, gespielt">${t ? esc(t.name) + "<br>+" + val : "–"}</button>`;
+      html += `<button class="cell done${t ? "" : " none"}" style="${t ? "background:" + t.color : ""}" data-act="cellReopen" data-r="${r}" data-c="${c}" aria-label="${val} Punkte, gespielt">${t ? esc(t.name) + "<br>+" + (cell.pts ?? val) : "–"}</button>`;
     } else {
       html += `<button class="cell" data-act="cellOpen" data-r="${r}" data-c="${c}">${val}</button>`;
     }
@@ -2725,10 +2726,10 @@ RENDER.board = function () {
 };
 
 /* Frage-Ansicht – flüchtiger Zustand (Buzzer) wird nicht gespeichert */
-let qv = { revealed: false, buzzed: null, locked: new Set(), awarded: undefined };
+let qv = { revealed: false, buzzed: null, locked: new Set(), awarded: undefined, picked: null };
 function openCell(r, c) {
   S.quiz.open = { r, c }; save();
-  qv = { revealed: false, buzzed: null, locked: new Set(), awarded: undefined };
+  qv = { revealed: false, buzzed: null, locked: new Set(), awarded: undefined, picked: null };
   showView("question");
 }
 RENDER.question = function () {
@@ -2745,8 +2746,12 @@ RENDER.question = function () {
   if (qz.mode === "buzzer" && !cell.done) showBuzzers(); else hideBuzzers();
 };
 function renderQuestionDynamic() {
-  const qz = S.quiz, { r, c } = qz.open, cell = qz.cells[r][c], val = (r + 1) * 100;
+  const qz = S.quiz, { r, c } = qz.open, cell = qz.cells[r][c], val = (r + 1) * 100, half = val / 2;
   const show = qv.revealed || cell.done;
+  const turnId = quizTurnTeamId();
+  // Reihum: Nach falscher Antwort des Teams am Zug geht es nur noch um die halben Punkte, dafür mit Risiko
+  const steal = qz.mode === "turn" && turnId && qv.locked.has(turnId);
+  const riskHtml = `<p class="risk">⚠️ Jetzt gilt: Richtig <b>+${half}</b> · Falsch <b>−${half}</b></p>`;
   $("#qOpts").innerHTML = cell.opts ? cell.opts.map((o, i) =>
     `<div class="opt${show ? (o === cell.a ? " correct" : " wrong") : ""}"><b>${"ABCD"[i]}</b>${esc(o)}</div>`).join("") : "";
   $("#qOpts").style.display = cell.opts ? "" : "none";
@@ -2755,7 +2760,7 @@ function renderQuestionDynamic() {
   let ctl = "";
   if (cell.done) {
     const t = teamById(cell.by);
-    ctl = `<p class="buzz-msg" style="background:${t ? t.color : "var(--muted)"}">${t ? `✓ +${val} für ${esc(t.name)}` : "Keine Punkte vergeben"}</p>
+    ctl = `<p class="buzz-msg" style="background:${t ? t.color : "var(--muted)"}">${t ? `✓ +${cell.pts ?? val} für ${esc(t.name)}` : "Keine Punkte vergeben"}</p>
       <button class="btn btn-primary btn-big" data-act="toBoard">Weiter zum Spielfeld ▸</button>`;
   } else if (qz.mode === "buzzer" && qv.buzzed) {
     const t = teamById(qv.buzzed);
@@ -2763,9 +2768,16 @@ function renderQuestionDynamic() {
       <div class="btn-row"><button class="btn btn-primary" data-act="buzzRight">✓ Richtig (+${val})</button>
       <button class="btn btn-danger" data-act="buzzWrong">✗ Falsch – andere Teams</button>
       ${show ? "" : `<button class="btn btn-ghost" data-act="reveal">Lösung zeigen</button>`}</div>`;
+  } else if (steal && qv.picked) {
+    const t = teamById(qv.picked);
+    ctl = `${riskHtml}<p class="buzz-msg" style="background:${t.color}">✋ ${esc(t.name)} antwortet</p>
+      <div class="btn-row"><button class="btn btn-primary" data-act="award" data-id="${t.id}" data-pts="${half}">✓ Richtig (+${half})</button>
+      <button class="btn btn-danger" data-act="stealWrong">✗ Falsch (−${half})</button>
+      ${show ? "" : `<button class="btn btn-ghost" data-act="reveal">Lösung zeigen</button>`}
+      <button class="btn btn-ghost" data-act="stealPick" data-id="">Anderes Team</button></div>`;
   } else {
-    const turnId = quizTurnTeamId();
-    const teamsHtml = S.teams.map((t) => `<button class="team-btn${t.id === turnId ? " first" : ""}" style="background:${t.color}" data-act="award" data-id="${t.id}" ${qv.locked.has(t.id) ? "disabled" : ""}>${esc(t.name)} +${val}</button>`).join("");
+    const pts = steal ? half : val;
+    const teamsHtml = S.teams.map((t) => `<button class="team-btn${t.id === turnId ? " first" : ""}" style="background:${t.color}" data-act="award" data-id="${t.id}" data-pts="${pts}" ${qv.locked.has(t.id) ? "disabled" : ""}>${esc(t.name)} +${pts}</button>`).join("");
     if (!show && qz.mode === "turn" && turnId) {
       // Reihum: werten, ohne die Lösung am Beamer zu zeigen; bei «falsch» dürfen die anderen Teams
       if (!qv.locked.has(turnId)) {
@@ -2774,9 +2786,9 @@ function renderQuestionDynamic() {
           <button class="btn btn-danger" data-act="turnWrong">✗ Falsch – andere Teams</button>
           <button class="btn btn-ghost" data-act="reveal">Lösung zeigen</button></div>`;
       } else {
-        ctl = `<p class="muted" style="font-size:1.2rem;font-weight:700;margin:0">Andere Teams: Wer weiss es? Hand hoch!</p>
-          <div class="award"><span class="lbl">Richtig beantwortet:</span>${S.teams.filter((t) => !qv.locked.has(t.id)).map((t) =>
-            `<button class="team-btn" style="background:${t.color}" data-act="award" data-id="${t.id}">${esc(t.name)} +${val}</button>`).join("")}</div>
+        ctl = `${riskHtml}<p class="muted" style="font-size:1.2rem;font-weight:700;margin:0">Andere Teams: Wer weiss es? Hand hoch! Man kann Punkte gewinnen, aber auch verlieren.</p>
+          <div class="award"><span class="lbl">Dieses Team antwortet:</span>${S.teams.filter((t) => !qv.locked.has(t.id)).map((t) =>
+            `<button class="team-btn" style="background:${t.color}" data-act="stealPick" data-id="${t.id}">${esc(t.name)}</button>`).join("")}</div>
           <div class="btn-row"><button class="btn btn-ghost" data-act="reveal">Niemand weiss es – Lösung zeigen</button></div>`;
       }
     } else if (!show) {
@@ -2790,12 +2802,13 @@ function renderQuestionDynamic() {
   $("#qControls").innerHTML = ctl;
   if (!$("#buzzers").hidden) renderBuzzers();
 }
-function quizAward(teamId) {
+function quizAward(teamId, pts) {
   const qz = S.quiz, { r, c } = qz.open, cell = qz.cells[r][c];
   if (cell.done) return;
   stopCountdown();
   cell.done = true; cell.by = teamId || null;
-  const val = (r + 1) * 100;
+  const val = teamId && pts ? pts : (r + 1) * 100;
+  if (teamId) cell.pts = val; else delete cell.pts;
   if (teamId) { const t = teamById(teamId); if (t) t.score += val; beep(988, 0.12, "triangle"); setTimeout(() => beep(1319, 0.2, "triangle"), 110); }
   qz.turn = (qz.turn + 1) % Math.max(1, S.teams.length);
   qv.revealed = true;
@@ -2806,8 +2819,9 @@ function quizAward(teamId) {
   renderQuestionDynamic();
 }
 function quizReopen(r, c) {
-  const qz = S.quiz, cell = qz.cells[r][c], t = teamById(cell.by), val = (r + 1) * 100;
-  openModal(`<h2>Frage nochmals öffnen?</h2><p>${t ? `Die ${val} Punkte von <b>${esc(t.name)}</b> werden wieder abgezogen.` : "Bisher hat niemand Punkte für diese Frage erhalten."}</p>
+  const qz = S.quiz, cell = qz.cells[r][c], t = teamById(cell.by), val = cell.pts ?? (r + 1) * 100;
+  const pen = (cell.pen || []).filter((p) => teamById(p.id));
+  openModal(`<h2>Frage nochmals öffnen?</h2><p>${t ? `Die ${val} Punkte von <b>${esc(t.name)}</b> werden wieder abgezogen.` : "Bisher hat niemand Punkte für diese Frage erhalten."}${pen.length ? ` Abgezogene Punkte für falsche Antworten (${pen.map((p) => `${esc(teamById(p.id).name)} −${p.pts}`).join(", ")}) werden zurückgegeben.` : ""}</p>
     <div class="btn-row"><button class="btn" data-act="closeModal">Abbrechen</button><button class="btn btn-primary" data-act="cellReopenYes" data-r="${r}" data-c="${c}">Öffnen</button></div>`);
 }
 function quizEnd() {
@@ -4415,11 +4429,23 @@ const ACTIONS = {
   cellReopen: (b) => quizReopen(Number(b.dataset.r), Number(b.dataset.c)),
   cellReopenYes: (b) => {
     const r = Number(b.dataset.r), c = Number(b.dataset.c), cell = S.quiz.cells[r][c], t = teamById(cell.by);
-    if (t) t.score -= (r + 1) * 100;
-    cell.done = false; cell.by = null; save(); closeModal(); openCell(r, c);
+    if (t) t.score -= cell.pts ?? (r + 1) * 100;
+    (cell.pen || []).forEach((p) => { const pt = teamById(p.id); if (pt) pt.score += p.pts; });
+    cell.done = false; cell.by = null; delete cell.pts; delete cell.pen; save(); closeModal(); renderScorebars(); openCell(r, c);
   },
   reveal: () => { qv.revealed = true; stopCountdown(); renderQuestionDynamic(); },
-  award: (b) => quizAward(b.dataset.id),
+  award: (b) => quizAward(b.dataset.id, Number(b.dataset.pts) || undefined),
+  stealPick: (b) => { qv.picked = b.dataset.id || null; renderQuestionDynamic(); },
+  stealWrong: () => {
+    const qz = S.quiz, { r, c } = qz.open, cell = qz.cells[r][c], half = (r + 1) * 50, t = teamById(qv.picked);
+    if (!t || cell.done) return;
+    t.score -= half;
+    cell.pen = (cell.pen || []).concat({ id: t.id, pts: half });
+    qv.locked.add(t.id); qv.picked = null;
+    beep(200, 0.3, "square", 0.12);
+    if (qv.locked.size >= S.teams.length) qv.revealed = true;
+    save(); renderScorebars(t.id); renderQuestionDynamic();
+  },
   buzzRight: () => quizAward(qv.buzzed),
   quizCheat: () => cheatAsk("quiz"),
   cheatShow: (b) => cheatShow(b.dataset.k),
