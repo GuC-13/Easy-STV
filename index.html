@@ -528,7 +528,7 @@
     </details>
 
     <p class="privacy">🔒 Die App speichert nur Teamnamen und Punkte auf diesem Gerät, keine Namen von Schülerinnen und Schülern. Sie funktioniert auch offline.</p>
-    <div id="appVersionLabel">v12 · 2026-11-02</div>
+    <div id="appVersionLabel">v13 · 2026-11-02</div>
   </section>
 
   <!-- Lektions-Assistent -->
@@ -2524,7 +2524,7 @@ const LESSON_TYPES = [["quiz", "🎯 Quiz & Schätzen"], ["kreativ", "🎨 Kreat
 const LESSON_TEMPLATES = {
   quiz: {
     30: [["teams", 3], ["quiz", 14, { rows: 3 }], ["est", 9, { n: 4 }], ["podium", 3]],
-    45: [["teams", 5], ["quiz", 20, { rows: 4 }], ["est", 12, { n: 5 }], ["podium", 4]],
+    45: [["teams", 5], ["quiz", 20, { rows: 4 }], ["est", 12, { n: 6 }], ["podium", 4]],
     90: [["teams", 5], ["quiz", 25, { rows: 5 }], ["est", 12, { n: 5 }], ["pause", 5], ["quiz", 20, { rows: 4 }], ["est", 10, { n: 4 }], ["podium", 5]],
   },
   kreativ: {
@@ -2547,7 +2547,7 @@ function phaseText(p) {
   const n = S.teams.length;
   switch (p.kind) {
     case "teams": return `Klasse in ${n} Teams einteilen (z. B. abzählen 1 bis ${n}), Tische zusammenschieben. Teams und Regeln am Beamer zeigen.`;
-    case "quiz": return `Spielfeld mit ${p.cfg.rows} Fragen pro Kategorie. Die Teams wählen reihum Kategorie und Punktwert. Schwierigere Fragen geben mehr Punkte.`;
+    case "quiz": { const gr = lessonGrid(p.min, S.lesson ? S.lesson.focus : S.planCfg.focus); return `Spielfeld mit ${gr.cols * gr.rows} Fragen (${gr.cols} Kategorien × ${gr.rows}), passend zu ${n} Teams. Die Teams wählen reihum Kategorie und Punktwert. Schwierigere Fragen geben mehr Punkte.`; }
     case "est": return `${p.cfg.n} Schätzfragen. Jedes Team schreibt eine Zahl auf, die Lehrperson tippt sie ein. Wer am nächsten dran ist, gewinnt.`;
     case "pause": return "Fenster öffnen. Alle stehen auf. Wer zur Aussage passt, wechselt den Platz.";
     case "podium": return "Rangliste mit Podest und Konfetti. Gewinnerteam applaudieren lassen, Tische zurückstellen.";
@@ -2613,7 +2613,8 @@ function startPhase(i) {
   else if (p.kind === "quiz") {
     if (S.quiz && S.quiz.phase === i && !S.quiz.finished) showView("board");
     else {
-      quizSetupPrefill({ focus: L.focus, rows: p.cfg.rows, phase: i });
+      const gr = lessonGrid(p.min, L.focus);
+      quizSetupPrefill({ focus: L.focus, rows: gr.rows, cols: gr.cols, phase: i });
       if (L.quick) { qsCfg.mode = "turn"; qsCfg.timer = 30; quizCreate(); } else showView("quizSetup");
     }
   } else if (p.kind === "est") {
@@ -2640,8 +2641,24 @@ function startPhase(i) {
   } else if (p.kind === "pause") showView("pause");
   else if (p.kind === "podium") showView("podium");
 }
-function nextPhase() {
+const lessonLeftMin = (L) => (L.dur * 60000 - (Date.now() - L.startedAt)) / 60000;
+// Schnelle Klasse: Statt 15 Minuten zu früh fertig zu sein, eine Bonusrunde vor der Siegerehrung anbieten
+function offerBonus() {
+  const L = S.lesson, left = Math.floor(lessonLeftMin(L)) - 3; // 3 Minuten für die Siegerehrung
+  const opts = [
+    ["est", "📏 Schätzduell", `${clamp(Math.floor(left / 2), 2, 8)} Fragen`, "nur Beamer"],
+    ["who", "🕵️ Wer bin ich?", `${clamp(Math.floor(left / 2.5), 2, 6)} Rätsel`, "nur Beamer"],
+    ["words", "🗣️ Begriffe raten", `${wordsRoundsFor(left)} Runde${wordsRoundsFor(left) === 1 ? "" : "n"} pro Team`, "eine Person vorne"],
+  ];
+  openModal(`<h2>⏱️ Noch ${left + 3} Minuten Zeit</h2>
+    <p>Ihr seid schneller als geplant. Noch eine Bonusrunde vor der Siegerehrung? Die Punkte zählen weiter.</p>
+    <div style="display:grid;gap:10px">${opts.map(([k, l, n, x]) => `<button class="btn btn-big" data-act="bonusPick" data-k="${k}" data-min="${left}">${l}<small>${n} · ${x}</small></button>`).join("")}</div>
+    <div class="btn-row"><button class="btn btn-primary" data-act="bonusNo">🏆 Direkt zur Siegerehrung</button></div>`);
+}
+function nextPhase(noBonus) {
   const L = S.lesson; if (!L) return;
+  const next = L.phases[L.idx + 1];
+  if (noBonus !== true && next && next.kind === "podium" && L.startedAt && lessonLeftMin(L) >= 8) { offerBonus(); return; }
   if (L.idx + 1 < L.phases.length) startPhase(L.idx + 1);
   else { L.done = true; save(); showView("home"); toast("Lektion beendet. Danke fürs Mitmachen!"); }
 }
@@ -2654,6 +2671,8 @@ function coachTip() {
   if (currentView === "board") return "👉 Das markierte Team wählt eine Kategorie und eine Punktzahl. Dieses Feld antippen. Höhere Zahl = schwierigere Frage.";
   if (currentView === "question") return "👉 Frage vorlesen, Team antwortet laut. Falsch? Andere Teams melden sich, ein Team antippen und werten: richtig halbe Punkte, falsch halbe Punkte Abzug.";
   if (currentView === "est") return "👉 Jedes Team schreibt eine Zahl auf ein Blatt. Die Zahlen eintippen, dann «Auflösen». Wer am nächsten liegt, gewinnt.";
+  if (currentView === "who") return "👉 Hinweis vorlesen. Meldet sich ein Team: beim Team ✓ oder ✗ tippen. Sonst «Nächster Hinweis».";
+  if (currentView === "words") return "👉 Eine Person pro Team steht mit dem Rücken zur Leinwand. «Start», das Team erklärt, du tippst ✓ oder ⏭.";
   if (currentView === "podium") return "👉 Gewinnerteam applaudieren lassen, Tische zurückstellen. Dann «Lektion beenden».";
   return "";
 }
@@ -2696,11 +2715,22 @@ function randomCats(focus, n, avoid = []) {
   if (pool.length < n) pool = pool.concat(shuffle(catsForFocus(focus).filter((c) => avoid.includes(c.id))));
   return pool.slice(0, n).map((c) => c.id);
 }
+// Spielfeld für eine Lektionsphase: rund 50 s pro Frage (Erfahrung: 16 Fragen ≈ 13 Minuten).
+// Anzahl Felder möglichst ein Vielfaches der Teams, damit jedes Team gleich oft wählen darf.
+function lessonGrid(min, focus) {
+  const maxCols = Math.min(6, catsForFocus(focus || "mix").length), target = min * 1.2, n = S.teams.length;
+  let best = null;
+  for (let rows = 3; rows <= 5; rows++) for (let cols = 2; cols <= maxCols; cols++) {
+    const cells = rows * cols, sc = Math.abs(cells - target) + (cells % n ? 4 : 0);
+    if (!best || sc < best.sc) best = { rows, cols, sc };
+  }
+  return best;
+}
 function quizSetupPrefill(o) {
   qsCfg.focus = o.focus || qsCfg.focus;
   qsCfg.rows = o.rows || qsCfg.rows;
   qsCfg.phase = o.phase ?? null;
-  const n = qsCfg.rows >= 5 ? 5 : 4;
+  const n = o.cols || (qsCfg.rows >= 5 ? 5 : 4);
   const avoid = S.lesson && o.phase != null ? S.lesson.usedCats : [];
   qsCfg.cats = randomCats(qsCfg.focus, Math.min(n, catsForFocus(qsCfg.focus).length), avoid);
 }
@@ -4479,7 +4509,7 @@ function openQuick() {
     <div class="chips">${FOCI.map((f) => `<button class="chip${(S.quickFocus || "mix") === f.id ? " on" : ""}" data-act="quickFocus" data-v="${f.id}">${f.name}</button>`).join("")}</div>
     <span class="field-label">Wie viele Teams?</span>
     <span class="stepper"><button data-act="quickTeams" data-d="-1" aria-label="Ein Team weniger">−</button><span>${S.teams.length}</span><button data-act="quickTeams" data-d="1" aria-label="Ein Team mehr">+</button></span>
-    <p class="hint">Ablauf: Teams bilden (5′) · Teamquiz (20′) · Schätzduell zum Allgemeinwissen (12′) · Siegerehrung (4′). Die App sagt dir bei jedem Schritt, was zu tun ist.</p>
+    <p class="hint">Ablauf: Teams bilden (5′) · Teamquiz (20′, ${(() => { const g = lessonGrid(20, S.quickFocus || "mix"); return g.rows * g.cols; })()} Fragen) · Schätzduell zum Allgemeinwissen (12′) · Siegerehrung (4′). Ist die Klasse schneller, schlägt die App vor der Siegerehrung eine Bonusrunde vor. Die App sagt dir bei jedem Schritt, was zu tun ist.</p>
     ${running ? `<p class="hint">Punkte und eine laufende Lektion werden zurückgesetzt.</p>` : ""}
     <div class="btn-row"><button class="btn" data-act="closeModal">Abbrechen</button><button class="btn btn-primary btn-big" style="flex:1" data-act="quickGo">▶ Starten</button></div>`);
 }
@@ -4741,6 +4771,13 @@ Object.assign(ACTIONS, FORMAT_ACTIONS, ESCAPE_ACTIONS, KR_ACTIONS, {
   startKeep: () => runPending(false),
   startZero: () => runPending(true),
   nextPhase: nextPhaseAsk,
+  bonusPick: (b) => {
+    const L = S.lesson, k = b.dataset.k, min = Math.max(4, Number(b.dataset.min));
+    const cfg = k === "est" ? { n: clamp(Math.floor(min / 2), 2, 8) } : k === "who" ? { n: clamp(Math.floor(min / 2.5), 2, 6) } : {};
+    L.phases.splice(L.idx + 1, 0, { kind: k, min, cfg, bonus: true });
+    save(); closeModal(); startPhase(L.idx + 1);
+  },
+  bonusNo: () => { closeModal(); nextPhase(true); },
   nextPhaseYes: () => { const L = S.lesson, k = PHASE_GAME[L.phases[L.idx].kind]; if (k && S[k]) S[k].finished = true; save(); closeModal(); nextPhase(); },
   openQuizSetup: () => openGame("quiz"),
   openEstSetup: () => openGame("est"),
