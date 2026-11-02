@@ -30,7 +30,12 @@ Wer selber zusammenstellen will (30/90 Minuten, kreative Lektionen, Breakout-Roo
 **📋 Alle Fragen auf einen Blick:** [FRAGEN.md](FRAGEN.md), mit Anzahl pro Fach, Kategorie und Schwierigkeit.
 Nach Änderungen an den Fragen neu erzeugen: `node tools/fragen-tabelle.mjs`.
 
-**🤫 Spickzettel:** Lösungen per QR-Code aufs eigene Handy. Vorher die Bildschirmspiegelung beenden.
+**🤫 Spickzettel:** Lösungen per QR-Code aufs eigene Handy. Vorher die Bildschirmspiegelung beenden Gibt es beim Teamquiz,
+Schätzduell, Wer bin ich?, Logikrätsel, Breakout-Room und in der Klassenrunde.
+
+**Vertippt?** Fast alles lässt sich zurücknehmen: «↩︎ Rückgängig» nach dem Werten, «✎ korrigieren» beim Schätzduell,
+Begriffe nach der Runde antippen, Punkte jedes Teams oben in der Punkteleiste antippen. Jedes Spiel hat «✕ Abbrechen»
+(Punkte behalten oder zurücknehmen). Ein neues Spiel fragt, ob die Punkte vom letzten Spiel weiterzählen.
 
 ## Aufs iPad holen
 
@@ -61,6 +66,12 @@ kommen per QR-Code zurück zur Lehrperson. Fantasienamen verwenden, keine Namen 
 - **Offline:** Der Service Worker holt zuerst aus dem Netz und fällt ohne Verbindung auf den Cache zurück.
   Ohne diesen Rückfall startet die App offline nicht.
 - **Leere Eingabe ist nicht 0:** `Number("")` ergibt 0. Darum prüft `parseNum` leere Eingaben zuerst.
+- **Eingaben von Menschen über `parseInput`, nicht `parseNum`:** Schätzungen und Antworten der SuS kommen mit Punkt
+  oder Komma, Apostroph, Einheiten, «Mio» oder «v. Chr.». `parseInput` liest das alles; «1.500» gilt als 1500, in der
+  Klassenrunde zählt auch die Lesart 1,5. `parseNum` bleibt streng und ist nur für die Fragenbanken da.
+- **Schätzungen sind am Beamer verdeckt** (`text-security`). Rückmeldungen unter dem Feld dürfen die Zahl nicht zeigen.
+- **Jedes Spiel merkt sich beim Start den Punktestand (`base`).** Damit kann «✕ Abbrechen» die Punkte dieses Spiels
+  zurücknehmen. Neue Spiele brauchen das auch, sonst fehlt beim Abbrechen die Wahl.
 - **Neue Version veröffentlichen:** `CACHE_NAME` in `sw.js` hochzählen und `#appVersionLabel` in `index.html`
   anpassen, sonst sehen Geräte die alte Version länger als nötig.
 

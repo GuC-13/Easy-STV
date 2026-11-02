@@ -233,6 +233,12 @@
   .team-btn { border: 0; color: #fff; border-radius: 12px; padding: 10px 16px; font-weight: 700; min-height: 48px; font-size: 1.05rem; }
   .team-btn.first { outline: 3px solid var(--text); outline-offset: 2px; }
   .team-btn:disabled { opacity: 0.3; cursor: default; }
+  .cont-row { display: flex; gap: 8px; align-items: stretch; }
+  .cont-row .continue { flex: 1; }
+  .gread { display: block; min-height: 1.2em; margin-top: 4px; font-size: 0.95rem; font-weight: 700; color: #fff; opacity: 0.95; }
+  .gread .bad { background: #fff; color: #b91c1c; border-radius: 6px; padding: 0 6px; }
+  .gread .amb { font-weight: 500; opacity: 0.9; }
+  .undo-row { display: flex; justify-content: center; margin-top: 10px; }
   .risk { margin: 0 0 10px; padding: 10px 14px; border-radius: 12px; border: 2px solid var(--text); font-size: 1.25rem; font-weight: 800; text-align: center; }
   .buzz-msg { font-size: clamp(1.3rem, 3vw, 2rem); font-weight: 800; text-align: center; padding: 10px; border-radius: 14px; color: #fff; }
 
@@ -340,7 +346,7 @@
   .toggle-team:not(.on) { opacity: 0.5; }
   .toggle-team.on { outline: 3px solid var(--text); outline-offset: 2px; }
   .word-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
-  .word-list span { padding: 6px 12px; border-radius: 10px; background: var(--surface-2); font-weight: 600; }
+  .word-list span, .word-list button { padding: 6px 12px; border-radius: 10px; background: var(--surface-2); font-weight: 600; border: 0; color: inherit; font: inherit; font-weight: 600; cursor: pointer; }
   .word-list .ok { background: var(--success-soft); color: var(--success); }
   .word-list .skip { text-decoration: line-through; opacity: 0.6; }
   .list-box { margin-top: 12px; padding: 12px 14px; border-radius: 12px; background: var(--surface-2); font-weight: 600; }
@@ -522,7 +528,7 @@
     </details>
 
     <p class="privacy">🔒 Die App speichert nur Teamnamen und Punkte auf diesem Gerät, keine Namen von Schülerinnen und Schülern. Sie funktioniert auch offline.</p>
-    <div id="appVersionLabel">v11 · 2026-11-02</div>
+    <div id="appVersionLabel">v12 · 2026-11-02</div>
   </section>
 
   <!-- Lektions-Assistent -->
@@ -596,6 +602,7 @@
       <button class="btn btn-ghost" data-act="quizCheat">🤫 Spickzettel</button>
       <button class="icon-btn" data-act="fullscreen" aria-label="Vollbild" data-fs>⛶</button>
       <button class="btn btn-outline" data-act="quizEnd">🏁 Beenden</button>
+      <button class="btn btn-ghost" data-act="gameAbort" data-g="quiz">✕ Abbrechen</button>
     </div>
     <div class="scorebar" data-scorebar></div>
     <div id="turnBanner"></div>
@@ -643,7 +650,9 @@
     <div class="topbar">
       <button class="btn btn-ghost" data-act="home">← Start</button>
       <h2 id="estTitle">📏 Schätzduell</h2>
+      <button class="btn btn-ghost" data-act="cheatAsk" data-k="est">🤫 Spickzettel</button>
       <button class="icon-btn" data-act="fullscreen" aria-label="Vollbild" data-fs>⛶</button>
+      <button class="btn btn-ghost" data-act="gameAbort" data-g="est">✕ Abbrechen</button>
     </div>
     <div class="scorebar" data-scorebar></div>
     <div class="q-card" id="estCard"></div>
@@ -688,6 +697,7 @@
       <button class="btn btn-ghost" data-act="home">← Start</button>
       <h2 id="boTitle">🎨 Teamauftrag</h2>
       <button class="icon-btn" data-act="fullscreen" aria-label="Vollbild" data-fs>⛶</button>
+      <button class="btn btn-ghost" data-act="gameAbort" data-g="bo">✕ Abbrechen</button>
     </div>
     <div id="boBody"></div>
   </section>
@@ -716,6 +726,7 @@
       <button class="btn btn-ghost" data-act="home">← Start</button>
       <h2 id="wordsTitle">🗣️ Begriffe raten</h2>
       <button class="icon-btn" data-act="fullscreen" aria-label="Vollbild" data-fs>⛶</button>
+      <button class="btn btn-ghost" data-act="gameAbort" data-g="words">✕ Abbrechen</button>
     </div>
     <div class="scorebar" data-scorebar></div>
     <div class="q-card" id="wordsCard"></div>
@@ -740,7 +751,9 @@
     <div class="topbar">
       <button class="btn btn-ghost" data-act="home">← Start</button>
       <h2 id="whoTitle">🕵️ Wer bin ich?</h2>
+      <button class="btn btn-ghost" data-act="cheatAsk" data-k="who">🤫 Spickzettel</button>
       <button class="icon-btn" data-act="fullscreen" aria-label="Vollbild" data-fs>⛶</button>
+      <button class="btn btn-ghost" data-act="gameAbort" data-g="who">✕ Abbrechen</button>
     </div>
     <div class="scorebar" data-scorebar></div>
     <div class="q-card" id="whoCard"></div>
@@ -767,7 +780,9 @@
     <div class="topbar">
       <button class="btn btn-ghost" data-act="home">← Start</button>
       <h2 id="logicTitle">🧠 Logikrätsel</h2>
+      <button class="btn btn-ghost" data-act="cheatAsk" data-k="logic">🤫 Spickzettel</button>
       <button class="icon-btn" data-act="fullscreen" aria-label="Vollbild" data-fs>⛶</button>
+      <button class="btn btn-ghost" data-act="gameAbort" data-g="logic">✕ Abbrechen</button>
     </div>
     <div class="scorebar" data-scorebar></div>
     <div class="q-card" id="logicCard"></div>
@@ -812,6 +827,7 @@
       <button class="btn btn-ghost" data-act="home">← Start</button>
       <h2 id="escLeadTitle">🚪 Breakout-Room</h2>
       <button class="icon-btn" data-act="fullscreen" aria-label="Vollbild" data-fs>⛶</button>
+      <button class="btn btn-ghost" data-act="gameAbort" data-g="esc">✕ Abbrechen</button>
     </div>
     <div class="scorebar" data-scorebar></div>
     <div id="escLeadBody"></div>
@@ -894,6 +910,7 @@
       <button class="btn btn-ghost" data-act="home">← Start</button>
       <h2 id="krLeadTitle">📱 Klassenrunde</h2>
       <button class="icon-btn" data-act="fullscreen" aria-label="Vollbild" data-fs>⛶</button>
+      <button class="btn btn-ghost" data-act="gameAbort" data-g="kr">✕ Abbrechen</button>
     </div>
     <div id="krLeadBody"></div>
   </section>
@@ -969,6 +986,42 @@ function parseNum(raw) {
   if (s === "") return null; // Number("") wäre 0 (README, Stolpersteine)
   const n = Number(s);
   return Number.isFinite(n) ? n : null;
+}
+/* Eingaben von Menschen (Schätzungen, Antworten der SuS): verzeiht Punkt und Komma, Tausender-Trennzeichen,
+   Einheiten, «Mio», «v. Chr.». Rückgabe { v, alt } oder null. alt = zweite Lesart bei «1.500» / «1,500»
+   (Tausender oder Dezimal?). Standard ist Tausender; die Vorschau zeigt, wie gelesen wurde. */
+function parseInput(raw) {
+  if (raw == null) return null;
+  let s = String(raw).toLowerCase().replace(/[\u00a0\u202f\u2009]/g, " ").trim();
+  if (!s) return null;
+  const neg = /v\.?\s*chr/.test(s) ? -1 : 1;
+  const mult = /(mrd|mia|milliarde)/.test(s) ? 1e9 : /(mio|million)/.test(s) ? 1e6 : /(tsd|tausend)/.test(s) ? 1e3 : 1;
+  // Wörter samt Abkürzungspunkt weg («ca. 500», «v. Chr.», «km»), dann alles ausser Ziffern und Trennzeichen
+  s = s.replace(/[a-zäöüéèà]+\.?/g, " ").replace(/[−–]/g, "-").replace(/[^0-9.,'’+-]/g, "").replace(/['’]/g, "");
+  const sign = s.startsWith("-") ? -1 : 1;
+  s = s.replace(/^[+-]+/, "");
+  if (!/^[0-9.,]*[0-9][0-9.,]*$/.test(s)) return null;
+  const dots = (s.match(/\./g) || []).length, commas = (s.match(/,/g) || []).length;
+  let main = null, alt = null;
+  if (dots && commas) {
+    const dec = s.lastIndexOf(".") > s.lastIndexOf(",") ? "." : ",";
+    main = s.split(dec === "." ? "," : ".").join("").replace(dec, ".");
+  } else if (dots + commas > 1) main = s.replace(/[.,]/g, "");
+  else if (dots + commas === 1) {
+    const [a, b] = s.split(/[.,]/);
+    if (b.length === 3 && a.length >= 1 && a.length <= 3 && a !== "0") { main = a + b; alt = a + "." + b; }
+    else main = (a || "0") + "." + b;
+  } else main = s;
+  const f = (x) => { const n = Number(x); return Number.isFinite(n) ? round6(n * mult * neg * sign) : null; };
+  const v = f(main);
+  return v === null ? null : { v, alt: alt === null ? null : f(alt) };
+}
+// Rückmeldung unter einem Eingabefeld. Verrät die Zahl nicht (Schätzungen sind am Beamer verdeckt).
+function inputPreview(raw) {
+  if (raw == null || String(raw).trim() === "") return "";
+  const r = parseInput(raw);
+  if (!r) return `<span class="bad">⚠️ keine Zahl</span>`;
+  return r.alt !== null ? `✓ Zahl <span class="amb">(Punkt/Komma als Tausender gelesen)</span>` : "✓ Zahl";
 }
 
 /* =====================================================================
@@ -2340,14 +2393,17 @@ function confetti() {
    Countdown (rechnet mit Date.now, nicht mit Mitzählen)
    ===================================================================== */
 let cd = null;
-function countdownHtml(id, sec) {
+const cdOnEnd = {}; // pro Anzeige: was beim Ablauf passiert (bleibt beim Neustart mit ↻ erhalten)
+// noRestart: Spielzeit, die nicht einfach neu beginnen darf (Breakout-Room)
+function countdownHtml(id, sec, noRestart) {
   return `<div class="countdown" id="${id}"><div class="cd-bar"><div class="cd-fill"></div></div>
     <span class="cd-num">${fmtClock(sec)}</span>
-    <button class="btn btn-ghost" data-act="cdRestart" data-sec="${sec}" data-el="${id}" aria-label="Zeit neu starten">↻</button></div>`;
+    ${noRestart ? "" : `<button class="btn btn-ghost" data-act="cdRestart" data-sec="${sec}" data-el="${id}" aria-label="Zeit neu starten" title="Zeit neu starten">↻</button>`}</div>`;
 }
 // endAt (optional): weiterlaufen lassen, z. B. nach Neuladen oder Ansichtswechsel
 function startCountdown(sec, elId, onEnd, endAt) {
   stopCountdown();
+  cdOnEnd[elId] = onEnd;
   cd = { endAt: endAt || Date.now() + sec * 1000, total: sec, elId, onEnd, iv: setInterval(tickCountdown, 200) };
   const el = document.getElementById(elId);
   if (el) el.classList.remove("cd-done", "cd-low");
@@ -2378,7 +2434,7 @@ function tickCountdown() {
 function renderScorebars(bumpId) {
   const turnId = currentView === "board" || currentView === "question" ? quizTurnTeamId() : null;
   const html = S.teams.map((t) =>
-    `<button class="score-chip${t.id === turnId ? " turn" : ""}${t.id === bumpId ? " bump" : ""}" style="background:${t.color}" data-act="scoreEdit" data-id="${t.id}" aria-label="Punkte von ${esc(t.name)} anpassen">
+    `<button class="score-chip${t.id === turnId ? " turn" : ""}${t.id === bumpId ? " bump" : ""}" style="background:${t.color}" data-act="scoreEdit" data-id="${t.id}" aria-label="Punkte von ${esc(t.name)} anpassen" title="Antippen: Punkte von Hand korrigieren">
       ${esc(t.name)} <span class="pts">${fmt(t.score)}</span></button>`).join("");
   $$("[data-scorebar]").forEach((el) => { el.innerHTML = html; });
 }
@@ -2391,6 +2447,9 @@ function openScoreEdit(id) {
     </div>
     <div class="btn-row"><button class="btn btn-primary" data-act="closeModal">Fertig</button></div>`);
 }
+function scoreSnap() { const o = {}; S.teams.forEach((t) => { o[t.id] = t.score; }); return o; }
+// sign: Veränderung (+300) statt Stand (300)
+const scoreList = (pairs, sign) => pairs.map(([t, v]) => `<b>${esc(t.name)}</b> ${sign && v > 0 ? "+" : ""}${fmt(v)}`).join(", ");
 function addScore(id, d) {
   const t = teamById(id); if (!t) return;
   t.score += d; save(); renderScorebars(id);
@@ -2415,6 +2474,10 @@ RENDER.home = function () {
   if (S.kr && !S.kr.finished) parts.push(`<button class="btn btn-big continue" data-act="toKr">▶ Klassenrunde fortsetzen<small>${Object.keys(S.kr.results).length} Ergebnisse eingesammelt</small></button>`);
   if (krResumable()) parts.push(`<button class="btn btn-big continue" data-act="toKrPlay">▶ Als Spieler/in weiterspielen<small>${esc(KP.name)}</small></button>`);
   if (S.logic && !S.logic.finished) parts.push(`<button class="btn btn-big continue" data-act="toLogic">▶ Logikrätsel fortsetzen<small>Rätsel ${S.logic.i + 1} von ${S.logic.qs.length}</small></button>`);
+  // ✕ neben laufenden Spielen: abbrechen (mit Wahl, ob die Punkte bleiben)
+  parts.forEach((h, i) => { const m = /data-act="(toBoard|toEst|toBreakout|toWords|toWho|toEsc|toKr|toLogic)"/.exec(h);
+    const k = m && { toBoard: "quiz", toEst: "est", toBreakout: "bo", toWords: "words", toWho: "who", toEsc: "esc", toKr: "kr", toLogic: "logic" }[m[1]];
+    if (k) parts[i] = `<div class="cont-row">${h}<button class="btn btn-ghost" data-act="gameAbort" data-g="${k}" aria-label="${GAMES[k].name} abbrechen" title="Abbrechen">✕</button></div>`; });
   $("#continueBox").innerHTML = parts.length ? `<div class="card" style="display:grid;gap:10px">${parts.join("")}</div>` : "";
 };
 function renderTeamEditor() {
@@ -2435,7 +2498,11 @@ document.addEventListener("input", (e) => {
   const id = e.target.dataset.teamName;
   if (id) { const t = teamById(id); if (t) { t.name = e.target.value.trim() || "Team"; save(); } }
   const g = e.target.dataset.guess;
-  if (g && S.est) { S.est.guesses[g] = e.target.value; save(); }
+  if (g && S.est) {
+    S.est.guesses[g] = e.target.value; save();
+    const el = document.getElementById("gr-" + g);
+    if (el) el.innerHTML = inputPreview(e.target.value);
+  }
 });
 
 /* =====================================================================
@@ -2687,7 +2754,7 @@ function quizCreate() {
     cells.push(qsCfg.cats.map((c) => makeCell(c, rowDifficulty(qsCfg.rows, r), taken)));
   }
   S.used = S.used.concat([...taken]).slice(-400);
-  S.quiz = { cats: qsCfg.cats.slice(), rows: qsCfg.rows, cells, mode: qsCfg.mode, timer: qsCfg.timer, turn: 0, open: null, finished: false, phase: qsCfg.phase };
+  S.quiz = { cats: qsCfg.cats.slice(), rows: qsCfg.rows, cells, mode: qsCfg.mode, timer: qsCfg.timer, turn: 0, open: null, finished: false, phase: qsCfg.phase, base: scoreSnap() };
   if (S.lesson && qsCfg.phase != null) S.lesson.usedCats = S.lesson.usedCats.concat(qsCfg.cats);
   save();
   viewStack = viewStack.filter((v) => v !== "quizSetup");
@@ -2726,16 +2793,23 @@ RENDER.board = function () {
 };
 
 /* Frage-Ansicht – flüchtiger Zustand (Buzzer) wird nicht gespeichert */
-let qv = { revealed: false, buzzed: null, locked: new Set(), awarded: undefined, picked: null };
+let qv = { revealed: false, buzzed: null, locked: new Set(), awarded: undefined, picked: null }, qvKey = null;
+// Zwischenstand einer Frage (wer schon falsch war, Lösung gezeigt) übersteht «← Spielfeld» und Neuladen
+function qvFor(r, c) {
+  const s = S.quiz.qv;
+  if (s && s.r === r && s.c === c) return { revealed: !!s.revealed, buzzed: null, locked: new Set(s.locked || []), awarded: undefined, picked: s.picked || null };
+  return { revealed: false, buzzed: null, locked: new Set(), awarded: undefined, picked: null };
+}
 function openCell(r, c) {
   S.quiz.open = { r, c }; save();
-  qv = { revealed: false, buzzed: null, locked: new Set(), awarded: undefined, picked: null };
+  qv = qvFor(r, c); qvKey = r + "," + c;
   showView("question");
 }
 RENDER.question = function () {
   const qz = S.quiz;
   if (!qz || !qz.open) { showView("board", { noPush: true }); return; }
   const { r, c } = qz.open, cell = qz.cells[r][c], cat = CAT_BY_ID[qz.cats[c]];
+  if (qvKey !== r + "," + c) { qv = qvFor(r, c); qvKey = r + "," + c; }
   $("#qHead").innerHTML = `<span class="pill">${cat.icon} ${esc(cat.name)}</span><span class="pill pill-strong">${(r + 1) * 100} Punkte</span>`;
   $("#qText").innerHTML = cell.html ? cell.q : esc(cell.q);
   renderQuestionDynamic();
@@ -2761,7 +2835,8 @@ function renderQuestionDynamic() {
   if (cell.done) {
     const t = teamById(cell.by);
     ctl = `<p class="buzz-msg" style="background:${t ? t.color : "var(--muted)"}">${t ? `✓ +${cell.pts ?? val} für ${esc(t.name)}` : "Keine Punkte vergeben"}</p>
-      <button class="btn btn-primary btn-big" data-act="toBoard">Weiter zum Spielfeld ▸</button>`;
+      <button class="btn btn-primary btn-big" data-act="toBoard">Weiter zum Spielfeld ▸</button>
+      <div class="undo-row"><button class="btn btn-ghost" data-act="quizUndo">↩︎ Falsch getippt? Rückgängig</button></div>`;
   } else if (qz.mode === "buzzer" && qv.buzzed) {
     const t = teamById(qv.buzzed);
     ctl = `<p class="buzz-msg" style="background:${t.color}">🔔 ${esc(t.name)} antwortet!</p>
@@ -2801,6 +2876,7 @@ function renderQuestionDynamic() {
   }
   $("#qControls").innerHTML = ctl;
   if (!$("#buzzers").hidden) renderBuzzers();
+  qz.qv = { r, c, revealed: qv.revealed, locked: [...qv.locked], picked: qv.picked }; save();
 }
 function quizAward(teamId, pts) {
   const qz = S.quiz, { r, c } = qz.open, cell = qz.cells[r][c];
@@ -2856,7 +2932,8 @@ function cheatAsk(kind) {
 }
 let cheatTimer = null;
 function cheatShow(kind) {
-  const data = kind === "esc" ? { k: "esc", e: S.esc.adv } : kind === "kr" ? { k: "kr", P: S.kr.P } : quizCheatData();
+  const data = kind === "esc" ? { k: "esc", e: S.esc.adv } : kind === "kr" ? { k: "kr", P: S.kr.P }
+    : kind === "est" ? { k: "est", q: S.est.qs } : kind === "who" ? { k: "who", q: S.who.qs } : kind === "logic" ? { k: "logic", q: S.logic.qs } : quizCheatData();
   let sec = 30;
   openModal(`<h2>🤫 Mit dem Handy scannen</h2>${QR.svg(cheatUrl(data))}
     <p class="hint" style="text-align:center">Schliesst automatisch in <b id="cheatSec">${sec}</b> s.</p>
@@ -2897,6 +2974,12 @@ RENDER.cheat = function () {
     const qs = krBuild(d.P);
     html = `<div class="card cheat-cat"><h2>📱 Klassenrunde</h2>${qs.map((q, i) => q ? `<div class="cheat-row"><span class="v">${i + 1}</span><div>
       <div class="q">${esc(q.q.replace(/<[^>]+>/g, " ").replace(/\s+/g, " "))}</div><div class="a">${esc(q.aText)}</div></div></div>` : "").join("")}</div>`;
+  } else if (d && ["est", "who", "logic"].includes(d.k) && Array.isArray(d.q)) {
+    const L = { est: ["📏 Schätzduell", EST, (x) => [x[0], `${x[4] ? fmtYear(x[1]) : fmt(x[1])} ${x[2]}`]],
+      who: ["🕵️ Wer bin ich?", WHO, (x) => [x[0] + ": " + x[2][0], x[1]]],
+      logic: ["🧠 Logikrätsel", LOGIC, (x) => [x[1], x[2] + " · " + x[3]]] }[d.k];
+    html = `<div class="card cheat-cat"><h2>${L[0]}</h2>${d.q.map((ix, i) => { const it = L[1][ix]; if (!it) return "";
+      const [q, a] = L[2](it); return `<div class="cheat-row"><span class="v">${i + 1}</span><div><div class="q">${esc(q)}</div><div class="a">${esc(a)}</div></div></div>`; }).join("")}</div>`;
   } else html = `<div class="card"><p>Dieser Spickzettel-Link ist ungültig.</p></div>`;
   $("#cheatBody").innerHTML = html;
 };
@@ -2947,7 +3030,7 @@ function estCreate() {
   if (pool.length < esCfg.n) { S.usedEst = []; pool = pool.concat(shuffle(EST.map((_, i) => i).filter((i) => !pool.includes(i)))); }
   const qs = pool.slice(0, esCfg.n);
   S.usedEst = S.usedEst.concat(qs).slice(-EST.length + 1);
-  S.est = { qs, i: 0, guesses: {}, revealed: false, results: null, timer: esCfg.timer, finished: false, phase: esCfg.phase };
+  S.est = { qs, i: 0, guesses: {}, revealed: false, results: null, timer: esCfg.timer, finished: false, phase: esCfg.phase, base: scoreSnap() };
   save();
   viewStack = viewStack.filter((v) => v !== "estSetup");
   showView("est", { noPush: true });
@@ -2964,7 +3047,9 @@ RENDER.est = function () {
   if (!e.revealed) {
     html += `<div class="guess-grid">${S.teams.map((t) => `<div class="guess" style="background:${t.color}">
         <label for="g-${t.id}">${esc(t.name)}</label>
-        <input id="g-${t.id}" inputmode="decimal" autocomplete="off" data-guess="${t.id}" value="${esc(e.guesses[t.id] || "")}" placeholder="Schätzung"></div>`).join("")}</div>`;
+        <input id="g-${t.id}" inputmode="decimal" autocomplete="off" data-guess="${t.id}" value="${esc(e.guesses[t.id] || "")}" placeholder="Schätzung">
+        <small class="gread" id="gr-${t.id}">${inputPreview(e.guesses[t.id])}</small></div>`).join("")}</div>
+      <p class="hint" style="margin:6px 0 0">Punkt oder Komma, beides geht. Tausender mit Apostroph (41'285) oder ohne. «Mio», Einheiten und «v. Chr.» werden verstanden. Nach dem Auflösen lässt sich ein Tippfehler noch korrigieren.</p>`;
     if (e.timer) html += countdownHtml("estCountdown", e.timer);
     html += `<div class="q-controls"><button class="btn btn-primary btn-big" data-act="estReveal">Auflösen</button></div>`;
   } else {
@@ -2983,15 +3068,30 @@ RENDER.est = function () {
       ? (lessonActive() && e.phase === S.lesson.idx
         ? `<button class="btn btn-primary btn-big" data-act="estFinish">Fertig · Nächste Phase ▸</button>`
         : `<button class="btn btn-primary btn-big" data-act="estFinish">🏆 Zur Rangliste</button>`)
-      : `<button class="btn btn-primary btn-big" data-act="estNext">Nächste Frage ▸</button>`}</div>`;
+      : `<button class="btn btn-primary btn-big" data-act="estNext">Nächste Frage ▸</button>`}</div>
+      <div class="undo-row"><button class="btn btn-ghost" data-act="estUndo">✎ Tippfehler? Schätzungen korrigieren</button></div>`;
   }
   $("#estCard").innerHTML = html;
   if (!e.revealed && e.timer) startCountdown(e.timer, "estCountdown", () => toast("Zeit um! Schätzungen eintippen."));
 };
-function estReveal() {
-  const e = S.est, item = EST[e.qs[e.i]], a = item[1];
-  const rows = S.teams.map((t) => ({ id: t.id, g: parseNum(e.guesses[t.id]) })).filter((x) => x.g !== null);
+function estReveal(force) {
+  const e = S.est; if (!e || e.revealed) return;
+  const item = EST[e.qs[e.i]], a = item[1];
+  const filled = (t) => String(e.guesses[t.id] || "").trim() !== "";
+  const bad = S.teams.filter((t) => filled(t) && !parseInput(e.guesses[t.id]));
+  if (bad.length) {
+    openModal(`<h2>Keine Zahl erkannt</h2><p>${bad.map((t) => `<b>${esc(t.name)}</b>: «${esc(e.guesses[t.id])}»`).join("<br>")}</p><p>Bitte als Zahl eintippen, z. B. 1500, 1'500 oder 1,5 Mio.</p>
+      <div class="btn-row"><button class="btn btn-primary" data-act="closeModal">Korrigieren</button></div>`);
+    return;
+  }
+  const rows = S.teams.map((t) => { const r = parseInput(e.guesses[t.id]); return { id: t.id, g: r ? r.v : null }; }).filter((x) => x.g !== null);
   if (!rows.length) { toast("Bitte mindestens eine Schätzung eintippen."); return; }
+  const missing = S.teams.filter((t) => !filled(t));
+  if (missing.length && force !== true) {
+    openModal(`<h2>Schätzung fehlt</h2><p>Noch nichts eingetippt für: ${missing.map((t) => `<b>${esc(t.name)}</b>`).join(", ")}. Diese Teams bekommen keine Punkte.</p>
+      <div class="btn-row"><button class="btn btn-primary" data-act="closeModal">Noch eintippen</button><button class="btn" data-act="estRevealYes">Trotzdem auflösen</button></div>`);
+    return;
+  }
   stopCountdown();
   rows.forEach((x) => { x.diff = Math.abs(x.g - a); });
   rows.sort((x, y) => x.diff - y.diff);
@@ -3091,7 +3191,7 @@ function boCreate() {
     const vs = shuffle(T.variants);
     S.teams.forEach((t, i) => { assign[t.id] = vs[i % vs.length]; });
   }
-  S.bo = { topic: T.id, statement, assign, phases: boBuildPhases(T, boCfg.dur), idx: 0, endAt: null, pres: 0, votes: {}, voted: false, finished: false, phase: boCfg.phase };
+  S.bo = { topic: T.id, statement, assign, phases: boBuildPhases(T, boCfg.dur), idx: 0, endAt: null, pres: 0, votes: {}, voted: false, finished: false, phase: boCfg.phase, base: scoreSnap() };
   save();
   viewStack = viewStack.filter((v) => v !== "boSetup");
   showView("breakout", { noPush: true });
@@ -3120,7 +3220,7 @@ RENDER.breakout = function () {
     html += `<h2 style="font-size:1.6rem">${esc(ph.t)}</h2><p style="font-size:1.25rem;margin:0">${esc(ph.text)}</p>`;
     html += b.endAt ? `<div class="big-timer">${countdownHtml("boCountdown", ph.min * 60)}</div>`
       : `<div class="q-controls"><button class="btn btn-primary btn-big" data-act="boStart">▶ ${fmt(ph.min)} Minuten starten</button></div>`;
-    html += `<div class="q-controls"><button class="btn${b.endAt ? " btn-primary" : ""}" data-act="boNext">Nächste Phase ▸</button></div>`;
+    html += `<div class="q-controls btn-row" style="flex-direction:row;justify-content:center">${b.idx ? `<button class="btn btn-ghost" data-act="boPrev">◂ Zurück</button>` : ""}<button class="btn${b.endAt ? " btn-primary" : ""}" data-act="boNext">Nächste Phase ▸</button></div>`;
   } else if (ph.kind === "present") {
     const order = boPresOrder(), t = teamById(order[b.pres]);
     html += `<h2 style="font-size:1.6rem">${esc(ph.t)}</h2>`;
@@ -3139,12 +3239,13 @@ RENDER.breakout = function () {
         <button data-act="boVote" data-id="${t.id}" data-d="-1" aria-label="Stimme weniger">−</button>
         <span style="min-width:28px;text-align:center;font-size:1.3rem">${b.votes[t.id] || 0}</span>
         <button data-act="boVote" data-id="${t.id}" data-d="1" aria-label="Stimme mehr">+</button></div>`).join("")}</div>
-        <p class="hint">Punkte: 100 fürs Mitmachen, dazu 100 pro Stimme.</p>
+        <p class="hint">Punkte: 100 fürs Mitmachen, dazu 100 pro Stimme. Eingetragen: <b>${Object.values(b.votes).reduce((s, v) => s + v, 0)} von ${S.teams.length}</b> Stimmen.</p>
         <div class="q-controls"><button class="btn btn-primary btn-big" data-act="boAward">Punkte vergeben</button></div>`;
     } else {
       html += `<div class="result-list">${S.teams.slice().sort((x, y) => (b.votes[y.id] || 0) - (b.votes[x.id] || 0)).map((t) =>
         `<div class="result-row"><span class="rk">${b.votes[t.id] || 0}</span><span class="nm"><span class="team-dot" style="background:${t.color}"></span>${esc(t.name)}</span><span class="gv">Stimmen</span><span class="pt">+${100 + 100 * (b.votes[t.id] || 0)}</span></div>`).join("")}</div>
-        <div class="q-controls"><button class="btn btn-primary btn-big" data-act="boFinish">${finishLabel(b)}</button></div>`;
+        <div class="q-controls"><button class="btn btn-primary btn-big" data-act="boFinish">${finishLabel(b)}</button></div>
+        <div class="undo-row"><button class="btn btn-ghost" data-act="boUnaward">↩︎ Stimmen falsch eingetragen? Korrigieren</button></div>`;
     }
   }
   html += `</div>`;
@@ -3183,7 +3284,7 @@ let wsCfg = { mode: "explain", sec: 60, rounds: 1, phase: null };
 const WORD_MODES = { explain: "🗣️ Erklären", panto: "🤸 Pantomime", alt: "🔁 Abwechselnd" };
 function wordsRoundsFor(min) { return Math.max(1, Math.floor(min / (S.teams.length * 1.6))); }
 function wordsCreate() {
-  S.words = { mode: wsCfg.mode, sec: wsCfg.sec, total: wsCfg.rounds * S.teams.length, turn: 0, cur: null, finished: false, phase: wsCfg.phase };
+  S.words = { mode: wsCfg.mode, sec: wsCfg.sec, total: wsCfg.rounds * S.teams.length, turn: 0, cur: null, finished: false, phase: wsCfg.phase, base: scoreSnap() };
   save();
   viewStack = viewStack.filter((v) => v !== "wordsSetup");
   showView("words", { noPush: true });
@@ -3231,12 +3332,14 @@ RENDER.words = function () {
       <div class="grid2" style="margin-top:16px">
         <button class="btn btn-primary btn-big" style="background:var(--success);border-color:var(--success)" data-act="wordsOk">✓ Erraten</button>
         <button class="btn btn-big" data-act="wordsSkip">⏭ Überspringen</button>
-      </div>`;
+      </div>
+      <div class="undo-row" id="wordsUndoRow">${wordsUndoHtml(w)}</div>`;
   } else {
     const ok = w.cur.list.filter((x) => x.ok).length;
     const last = w.turn >= w.total;
     html = `<p class="buzz-msg" style="background:${team ? teamById(w.cur.teamId).color : "var(--muted)"}">${esc(teamById(w.cur.teamId).name)}: ${ok} Begriff${ok === 1 ? "" : "e"} erraten (+${ok * 100})</p>
-      <div class="word-list">${w.cur.list.map((x) => `<span class="${x.ok ? "ok" : "skip"}">${x.ok ? "✓ " : ""}${esc(x.w)}</span>`).join("")}</div>
+      <div class="word-list">${w.cur.list.map((x, i) => `<button class="${x.ok ? "ok" : "skip"}" data-act="wordsToggle" data-i="${i}" title="Antippen zum Korrigieren">${x.ok ? "✓ " : ""}${esc(x.w)}</button>`).join("")}</div>
+      ${w.cur.list.length ? `<p class="hint" style="text-align:center;margin:6px 0 0">Falsch getippt? Begriff antippen, um ihn als erraten oder nicht erraten zu zählen.</p>` : ""}
       <div class="q-controls">${last
         ? `<button class="btn btn-primary btn-big" data-act="wordsFinish">${finishLabel(w)}</button>`
         : `<button class="btn btn-primary btn-big" data-act="wordsNextTeam">Nächstes Team: ${esc(S.teams[w.turn % S.teams.length].name)} ▸</button>`}</div>`;
@@ -3249,6 +3352,7 @@ function wordsStart() {
   w.cur = { teamId: team.id, endAt: Date.now() + w.sec * 1000, list: [], word: nextWord(), done: false };
   save(); RENDER.words();
 }
+const wordsUndoHtml = (w) => w.cur.list.length ? `<button class="btn btn-ghost" data-act="wordsUndo">↩︎ Letzten Tipp zurück («${esc(w.cur.list[w.cur.list.length - 1].w)}»)</button>` : "";
 function wordsAnswer(ok) {
   const w = S.words; if (!w.cur || w.cur.done) return;
   w.cur.list.push({ w: w.cur.word, ok });
@@ -3257,6 +3361,7 @@ function wordsAnswer(ok) {
   save();
   $(".word-big").textContent = w.cur.word;
   const pills = $$("#wordsCard .pill"); if (pills[1]) pills[1].textContent = "✓ " + w.cur.list.filter((x) => x.ok).length;
+  const u = $("#wordsUndoRow"); if (u) u.innerHTML = wordsUndoHtml(w);
 }
 function wordsEndTurn() {
   const w = S.words; if (!w || !w.cur || w.cur.done) return;
@@ -3273,9 +3378,10 @@ function wordsEndTurn() {
    Wer bin ich? (bis zu 5 Hinweise, je früher richtig, desto mehr Punkte)
    ===================================================================== */
 let whoCfg = { n: 4, phase: null };
+let whoLatePts = null; // gewählte Punkte fürs nachträgliche Vergeben (pro Rätsel)
 function whoCreate() {
   const qs = pickUnused(WHO, "usedWho", whoCfg.n);
-  S.who = { qs, i: 0, clue: 1, out: [], solvedBy: null, revealed: false, finished: false, phase: whoCfg.phase };
+  S.who = { qs, i: 0, clue: 1, out: [], solvedBy: null, revealed: false, finished: false, phase: whoCfg.phase, base: scoreSnap() };
   save();
   viewStack = viewStack.filter((v) => v !== "whoSetup");
   showView("who", { noPush: true });
@@ -3297,16 +3403,26 @@ RENDER.who = function () {
       <div class="team-judge">${S.teams.map((t) => {
         const out = g.out.includes(t.id);
         return `<div class="judge${out ? " out" : ""}" style="background:${t.color}"><span class="nm">${esc(t.name)}</span>
-          <button data-act="whoRight" data-id="${t.id}" ${out ? "disabled" : ""} aria-label="${esc(t.name)} richtig">✓</button>
-          <button data-act="whoWrong" data-id="${t.id}" ${out ? "disabled" : ""} aria-label="${esc(t.name)} falsch">✗</button></div>`;
+          ${out ? `<button data-act="whoUnout" data-id="${t.id}" aria-label="${esc(t.name)} wieder zulassen" title="Versehentlich? Wieder zulassen">↩︎</button>`
+            : `<button data-act="whoRight" data-id="${t.id}" aria-label="${esc(t.name)} richtig">✓</button>
+          <button data-act="whoWrong" data-id="${t.id}" aria-label="${esc(t.name)} falsch">✗</button>`}</div>`;
       }).join("")}</div>
+      <p class="hint" style="margin:8px 0 0">Unsicher, ob die Antwort stimmt? <b>🤫 Spickzettel</b> oben (aufs Handy), nicht weitere Hinweise zeigen: Jeder Hinweis senkt die Punkte.</p>
       <div class="q-controls btn-row" style="flex-direction:row">
-        ${g.clue < 5 ? `<button class="btn btn-primary" style="flex:1" data-act="whoClue">Nächster Hinweis ▸</button>` : ""}
+        ${g.clue < 5 ? `<button class="btn btn-primary" style="flex:1" data-act="whoClue">Nächster Hinweis ▸ <small>(dann ${pts - 100} Punkte)</small></button>` : ""}
         <button class="btn" data-act="whoReveal">Auflösen</button></div>`;
   } else {
     const t = teamById(g.solvedBy);
     html += `<div class="answer"><span class="lbl">Lösung</span>${esc(sol)}</div>`;
-    html += t ? `<p class="buzz-msg" style="background:${t.color};margin-top:12px">✓ +${(6 - g.clue) * 100} für ${esc(t.name)}</p>` : "";
+    if (t) html += `<p class="buzz-msg" style="background:${t.color};margin-top:12px">✓ +${g.pts ?? (6 - g.clue) * 100} für ${esc(t.name)}</p>
+      <div class="undo-row"><button class="btn btn-ghost" data-act="whoUndo">↩︎ Falsches Team? Rückgängig</button></div>`;
+    else {
+      // Auch nach dem Auflösen noch Punkte vergeben (z. B. wenn die Lehrperson die Lösung zuerst sehen musste)
+      const lp = whoLatePts ?? (6 - g.clue) * 100;
+      html += `<div class="card" style="margin-top:12px"><span class="field-label" style="margin-top:0">Hatte ein Team es richtig? Punkte nachträglich vergeben</span>
+        <div class="chips">${[500, 400, 300, 200, 100].map((v, i) => `<button class="chip${lp === v ? " on" : ""}" data-act="whoLatePts" data-v="${v}">${v} <small>(${i + 1}. Hinweis)</small></button>`).join("")}</div>
+        <div class="award">${S.teams.map((x) => `<button class="team-btn" style="background:${x.color}" data-act="whoLate" data-id="${x.id}">${esc(x.name)} +${lp}</button>`).join("")}</div></div>`;
+    }
     const last = g.i + 1 >= g.qs.length;
     html += `<div class="q-controls">${last ? `<button class="btn btn-primary btn-big" data-act="whoFinish">${finishLabel(g)}</button>`
       : `<button class="btn btn-primary btn-big" data-act="whoNext">Nächstes Rätsel ▸</button>`}</div>`;
@@ -3322,7 +3438,7 @@ function logicCreate() {
   const target = ({ 7: 2, 8: 3, 9: 4 })[S.stufe] || 3;
   const qs = pickUnused(LOGIC, "usedLogic", lgCfg.n, (i) => Math.abs(LOGIC[i][0] - target) + Math.random() * 2.5);
   qs.sort((a, b) => LOGIC[a][0] - LOGIC[b][0]);
-  S.logic = { qs, i: 0, revealed: false, correct: [], timer: lgCfg.timer, endAt: lgCfg.timer ? Date.now() + lgCfg.timer * 1000 : null, finished: false, phase: lgCfg.phase };
+  S.logic = { qs, i: 0, revealed: false, correct: [], timer: lgCfg.timer, endAt: lgCfg.timer ? Date.now() + lgCfg.timer * 1000 : null, finished: false, phase: lgCfg.phase, base: scoreSnap() };
   save();
   viewStack = viewStack.filter((v) => v !== "logicSetup");
   showView("logic", { noPush: true });
@@ -3345,7 +3461,7 @@ RENDER.logic = function () {
       <div class="q-controls"><button class="btn btn-primary btn-big" data-act="logicReveal">Lösung zeigen</button></div>`;
   } else {
     html += `<div class="answer"><span class="lbl">Lösung</span>${esc(a)}</div><p class="info-box">💡 ${esc(expl)}</p>
-      <span class="field-label">Welche Teams haben es richtig?</span>
+      <span class="field-label">Welche Teams haben es richtig? Antippen (nochmals tippen = weg)</span>
       <div class="award">${S.teams.map((t) => `<button class="team-btn toggle-team${g.correct.includes(t.id) ? " on" : ""}" style="background:${t.color}" data-act="logicToggle" data-id="${t.id}" aria-pressed="${g.correct.includes(t.id)}">${g.correct.includes(t.id) ? "✓ " : ""}${esc(t.name)}</button>`).join("")}</div>
       <div class="q-controls"><button class="btn btn-primary btn-big" data-act="logicAward">${g.correct.length ? `+${lvl * 100} vergeben und ` : ""}${g.i + 1 >= g.qs.length ? "fertig" : "weiter"} ▸</button></div>`;
   }
@@ -3370,7 +3486,9 @@ const FORMAT_ACTIONS = {
   boNext,
   boPresNext,
   boVote: (b) => { const v = S.bo.votes; v[b.dataset.id] = Math.max(0, (v[b.dataset.id] || 0) + Number(b.dataset.d)); save(); RENDER.breakout(); },
-  boAward: () => boAward(),
+  boAward: () => { if (!S.bo.voted) boAward(); },
+  boPrev: () => { const b = S.bo; if (!b.idx) return; b.idx--; b.endAt = null; b.pres = 0; save(); stopCountdown(); RENDER.breakout(); window.scrollTo(0, 0); },
+  boUnaward: () => { const b = S.bo; if (!b.voted) return; S.teams.forEach((t) => { t.score -= 100 + 100 * (b.votes[t.id] || 0); }); b.voted = false; save(); renderScorebars(); RENDER.breakout(); },
   boAwardYes: () => { closeModal(); boAward(true); },
   boFinish: () => finishFormat("bo"),
   toBreakout: () => showView("breakout"),
@@ -3382,6 +3500,17 @@ const FORMAT_ACTIONS = {
   wordsCreate,
   wordsStart,
   wordsOk: () => wordsAnswer(true),
+  wordsUndo: () => {
+    const w = S.words; if (!w.cur || w.cur.done || !w.cur.list.length) return;
+    const last = w.cur.list.pop(); w.cur.word = last.w; save();
+    $(".word-big").textContent = w.cur.word;
+    const pills = $$("#wordsCard .pill"); if (pills[1]) pills[1].textContent = "✓ " + w.cur.list.filter((x) => x.ok).length;
+    $("#wordsUndoRow").innerHTML = wordsUndoHtml(w);
+  },
+  wordsToggle: (b) => {
+    const w = S.words, x = w.cur && w.cur.done && w.cur.list[Number(b.dataset.i)]; if (!x) return;
+    x.ok = !x.ok; addScore(w.cur.teamId, x.ok ? 100 : -100); save(); RENDER.words();
+  },
   wordsSkip: () => wordsAnswer(false),
   wordsNextTeam: () => { S.words.cur = null; save(); RENDER.words(); },
   wordsFinish: () => finishFormat("words"),
@@ -3391,14 +3520,18 @@ const FORMAT_ACTIONS = {
   whoN: (b) => { whoCfg.n = Number(b.dataset.v); RENDER.whoSetup(); },
   whoCreate,
   whoClue: () => { const g = S.who; g.clue = Math.min(5, g.clue + 1); save(); RENDER.who(); },
-  whoRight: (b) => { const g = S.who; g.solvedBy = b.dataset.id; g.revealed = true; addScore(b.dataset.id, (6 - g.clue) * 100); fanfare(); save(); RENDER.who(); },
+  whoRight: (b) => { const g = S.who; if (g.solvedBy) return; g.solvedBy = b.dataset.id; g.pts = (6 - g.clue) * 100; g.revealed = true; addScore(b.dataset.id, g.pts); fanfare(); save(); RENDER.who(); },
+  whoUnout: (b) => { const g = S.who; g.out = g.out.filter((x) => x !== b.dataset.id); save(); RENDER.who(); },
+  whoUndo: () => { const g = S.who; if (!g.solvedBy) return; addScore(g.solvedBy, -(g.pts ?? (6 - g.clue) * 100)); g.solvedBy = null; g.pts = null; whoLatePts = null; save(); RENDER.who(); },
+  whoLatePts: (b) => { whoLatePts = Number(b.dataset.v); RENDER.who(); },
+  whoLate: (b) => { const g = S.who; if (g.solvedBy) return; g.solvedBy = b.dataset.id; g.pts = whoLatePts ?? (6 - g.clue) * 100; addScore(g.solvedBy, g.pts); fanfare(); save(); RENDER.who(); },
   whoWrong: (b) => {
     const g = S.who; g.out.push(b.dataset.id); beep(200, 0.3, "square", 0.12);
     if (g.out.length >= S.teams.length) g.revealed = true;
     save(); RENDER.who();
   },
   whoReveal: () => { S.who.revealed = true; save(); RENDER.who(); },
-  whoNext: () => { const g = S.who; g.i++; g.clue = 1; g.out = []; g.solvedBy = null; g.revealed = false; save(); RENDER.who(); window.scrollTo(0, 0); },
+  whoNext: () => { const g = S.who; g.i++; g.clue = 1; g.out = []; g.solvedBy = null; g.pts = null; g.revealed = false; whoLatePts = null; save(); RENDER.who(); window.scrollTo(0, 0); },
   whoFinish: () => finishFormat("who"),
   toWho: () => showView("who"),
 
@@ -3406,9 +3539,26 @@ const FORMAT_ACTIONS = {
   lgN: (b) => { lgCfg.n = Number(b.dataset.v); RENDER.logicSetup(); },
   lgTimer: (b) => { lgCfg.timer = Number(b.dataset.v); RENDER.logicSetup(); },
   logicCreate,
-  logicReveal: () => { S.logic.revealed = true; stopCountdown(); save(); RENDER.logic(); },
+  logicReveal: () => {
+    const g = S.logic, left = g.endAt ? Math.ceil((g.endAt - Date.now()) / 1000) : 0;
+    if (left > 5) {
+      openModal(`<h2>Lösung schon zeigen?</h2><p>Die Zeit läuft noch (${fmtClock(left)}). Sind alle Teams fertig?</p>
+        <div class="btn-row"><button class="btn" data-act="closeModal">Warten</button><button class="btn btn-primary" data-act="logicRevealYes">Lösung zeigen</button></div>`);
+      return;
+    }
+    ACTIONS.logicRevealYes();
+  },
+  logicRevealYes: () => { closeModal(); S.logic.revealed = true; stopCountdown(); save(); RENDER.logic(); },
   logicToggle: (b) => { const c = S.logic.correct, i = c.indexOf(b.dataset.id); if (i >= 0) c.splice(i, 1); else c.push(b.dataset.id); save(); RENDER.logic(); },
-  logicAward,
+  logicAward: () => {
+    if (!S.logic.correct.length) {
+      openModal(`<h2>Kein Team richtig?</h2><p>Es ist kein Team angetippt. Wer die richtige Lösung hat, zuerst antippen.</p>
+        <div class="btn-row"><button class="btn btn-primary" data-act="closeModal">Teams antippen</button><button class="btn" data-act="logicAwardYes">Niemand hatte es</button></div>`);
+      return;
+    }
+    logicAward();
+  },
+  logicAwardYes: () => { closeModal(); logicAward(); },
   toLogic: () => showView("logic"),
 };
 
@@ -3684,7 +3834,7 @@ RENDER.escSetup = function () {
   $("#escDur").innerHTML = [20, 30, 40].map((d) => `<button class="chip${escCfg.dur === d ? " on" : ""}" data-act="escDurSet" data-v="${d}">${d} Minuten</button>`).join("");
 };
 function escCreate() {
-  S.esc = { adv: escCfg.adv, dur: escCfg.dur, mode: escCfg.mode, startedAt: null, finishes: [], progress: {}, shared: null, finished: false, phase: escCfg.phase };
+  S.esc = { adv: escCfg.adv, dur: escCfg.dur, mode: escCfg.mode, startedAt: null, finishes: [], progress: {}, shared: null, finished: false, phase: escCfg.phase, base: scoreSnap() };
   save();
   viewStack = viewStack.filter((v) => v !== "escSetup");
   showView("escLead", { noPush: true });
@@ -3722,7 +3872,7 @@ RENDER.escLead = function () {
       ${mode === "beamer" ? "" : escJoinHtml()}
       <button class="btn btn-primary btn-big" data-act="escGo">▶ Abenteuer starten (${e.dur} Minuten)</button>`;
   } else if (mode === "beamer") {
-    html += `<div class="big-timer">${countdownHtml("escCountdown", e.dur * 60)}</div>
+    html += `<div class="big-timer">${countdownHtml("escCountdown", e.dur * 60, true)}</div>
       <div class="q-controls"><button class="btn btn-primary btn-big" data-act="escToRoom">🚪 Zum Breakout-Room${e.shared ? ` (Raum ${escCurrentRoom(e.shared) || "Schloss"})` : ""}</button></div>
       <div class="btn-row" style="margin-top:16px">
         <button class="btn" data-act="escFinish">${finishLabel(e)}</button>
@@ -3733,7 +3883,7 @@ RENDER.escLead = function () {
     return;
   } else {
     const endAt = e.startedAt + e.dur * 60000;
-    html += `<div class="big-timer">${countdownHtml("escCountdown", e.dur * 60)}</div>
+    html += `<div class="big-timer">${countdownHtml("escCountdown", e.dur * 60, true)}</div>
       <h2 style="margin-top:20px">Gruppen <button class="btn btn-ghost small" style="min-height:0;padding:2px 8px" data-act="escJoinQr">📷 QR für Gruppen</button></h2>
       <p class="hint" style="margin-top:0">Zeigt eine Gruppe den Bildschirm «Geschafft!», hier auf 🏁 tippen. Die Reihenfolge ergibt die Punkte (500, 400, 300 …).</p>
       <div class="esc-teams">${S.teams.map((t, i) => {
@@ -3957,7 +4107,7 @@ function krCreate() {
     m: krCfg.mode === "takt" ? "t" : "f", sec: krCfg.sec, at: 0, tm: krCfg.teams ? S.teams.map((t) => t.name) : [] };
   if (P.m === "t") P.at = Date.now() + krCfg.lead * 1000;
   P.h = krHash(krBuild(P));
-  S.kr = { P, results: {}, applied: false, finished: false };
+  S.kr = { P, results: {}, applied: false, finished: false, base: scoreSnap() };
   save();
   viewStack = viewStack.filter((v) => v !== "krSetup");
   showView("krLead", { noPush: true });
@@ -4220,9 +4370,10 @@ function krAnswer(val) {
   let ok;
   if (q.kind === "mc") ok = val === q.ai;
   else {
-    const v = parseNum(val);
-    if (v === null) { toast("Bitte eine Zahl eingeben."); return; }
-    ok = Math.abs(v - q.num) <= 1e-6 * Math.max(1, Math.abs(q.num));
+    const r = parseInput(val);
+    if (!r) { toast("Bitte eine Zahl eingeben."); return; }
+    const same = (v) => v !== null && Math.abs(v - q.num) <= 1e-6 * Math.max(1, Math.abs(q.num));
+    ok = same(r.v) || same(r.alt); // «1.500» kann 1500 oder 1,5 heissen: beides gilt
   }
   // Takt: bis 50 Bonuspunkte für schnelle richtige Antworten
   KP.ans[i] = { v: val, ok, pts: ok ? 100 + (ph.st === "q" ? Math.round(50 * ph.left / P.sec) : 0) : 0 };
@@ -4258,7 +4409,7 @@ const KR_ACTIONS = {
   krScanBack: () => { krCamStop(); showView("krLead", { noPush: true }); },
   krCamSwitch: () => { krFacing = krFacing === "environment" ? "user" : "environment"; krCamStart(); },
   krManAdd: () => {
-    const name = $("#krManName").value.trim().replace(/\|/g, ""), pts = parseNum($("#krManPts").value);
+    const name = $("#krManName").value.trim().replace(/\|/g, ""), pts = (parseInput($("#krManPts").value) || { v: null }).v;
     if (!name || pts === null) { toast("Spielname und Punkte eintragen."); return; }
     const dev = "m" + Math.random().toString(36).slice(2, 7), sel = $("#krManTeam");
     S.kr.results[dev] = { dev, team: sel ? Number(sel.value) : null, name, pts: Math.round(pts), ok: "?", n: S.kr.P.q.length };
@@ -4431,7 +4582,16 @@ const ACTIONS = {
     const r = Number(b.dataset.r), c = Number(b.dataset.c), cell = S.quiz.cells[r][c], t = teamById(cell.by);
     if (t) t.score -= cell.pts ?? (r + 1) * 100;
     (cell.pen || []).forEach((p) => { const pt = teamById(p.id); if (pt) pt.score += p.pts; });
-    cell.done = false; cell.by = null; delete cell.pts; delete cell.pen; save(); closeModal(); renderScorebars(); openCell(r, c);
+    cell.done = false; cell.by = null; delete cell.pts; delete cell.pen; S.quiz.qv = null; qvKey = null; save(); closeModal(); renderScorebars(); openCell(r, c);
+  },
+  // direkt nach dem Werten: Punkte und Abzüge zurück, das gleiche Team ist wieder dran
+  quizUndo: () => {
+    const qz = S.quiz; if (!qz || !qz.open) return;
+    const { r, c } = qz.open; if (!qz.cells[r][c].done) return;
+    qz.turn = (qz.turn - 1 + S.teams.length) % Math.max(1, S.teams.length);
+    viewStack = viewStack.filter((v) => v !== "question");
+    ACTIONS.cellReopenYes({ dataset: { r, c } });
+    toast("Rückgängig: Die Frage ist wieder offen.");
   },
   reveal: () => { qv.revealed = true; stopCountdown(); renderQuestionDynamic(); },
   award: (b) => quizAward(b.dataset.id, Number(b.dataset.pts) || undefined),
@@ -4469,7 +4629,15 @@ const ACTIONS = {
     } else quizEnd();
   },
   quizEndYes: () => { closeModal(); quizEnd(); },
-  cdRestart: (b) => startCountdown(Number(b.dataset.sec), b.dataset.el),
+  cdRestart: (b) => {
+    const sec = Number(b.dataset.sec), el = b.dataset.el, endAt = Date.now() + sec * 1000;
+    // Spiele mit gespeicherter Endzeit: Endzeit mitziehen, sonst springt die Uhr nach dem Neuladen zurück
+    if (el === "wordsCountdown") { const w = S.words; if (!w || !w.cur || w.cur.done) return; w.cur.endAt = endAt; }
+    else if (el === "boCountdown" && S.bo) S.bo.endAt = endAt;
+    else if (el === "logicCountdown" && S.logic) S.logic.endAt = endAt;
+    save();
+    startCountdown(sec, el, cdOnEnd[el], endAt);
+  },
 
   openEstSetup: () => {
     if (S.est && !S.est.finished) { showView("est"); return; }
@@ -4479,19 +4647,150 @@ const ACTIONS = {
   esTimer: (b) => { esCfg.timer = Number(b.dataset.v); RENDER.estSetup(); },
   estCreate,
   toEst: () => showView("est"),
-  estReveal,
+  estReveal: () => estReveal(),
+  estRevealYes: () => { closeModal(); estReveal(true); },
+  estUndo: () => {
+    const e = S.est; if (!e || !e.revealed) return;
+    (e.results || []).forEach((x) => { const t = teamById(x.id); if (t) t.score -= x.pts + x.bonus; });
+    e.revealed = false; e.results = null; save(); showView("est", { noPush: true }); toast("Punkte dieser Frage zurückgenommen. Jetzt korrigieren und neu auflösen.");
+  },
+  cheatAsk: (b) => cheatAsk(b.dataset.k),
   estNext: () => { const e = S.est; e.i++; e.guesses = {}; e.revealed = false; e.results = null; save(); showView("est", { noPush: true }); },
   estFinish,
 
   pauseNext: () => { if (!pauseOrder.length) pauseOrder = shuffle(PAUSE_PROMPTS); $("#pausePrompt").textContent = pauseOrder.pop(); },
   openPodium: () => showView("podium"),
 };
+/* =====================================================================
+   Spiele verwalten: fortsetzen, abbrechen, neu starten (gegen Patzer der Lehrperson)
+   ===================================================================== */
+const GAMES = {
+  quiz: { name: "Teamquiz", resume: () => showView("board"), setup: () => { quizSetupPrefill({ phase: null }); showView("quizSetup"); } },
+  est: { name: "Schätzduell", resume: () => showView("est"), setup: () => { estSetupPrefill({ phase: null }); showView("estSetup"); } },
+  bo: { name: "Teamauftrag", resume: () => showView("breakout"), setup: () => { boCfg.phase = null; showView("boSetup"); } },
+  words: { name: "Begriffe raten", resume: () => showView("words"), setup: () => { wsCfg.phase = null; showView("wordsSetup"); } },
+  who: { name: "Wer bin ich?", resume: () => showView("who"), setup: () => { whoCfg.phase = null; showView("whoSetup"); } },
+  logic: { name: "Logikrätsel", resume: () => showView("logic"), setup: () => { lgCfg.phase = null; showView("logicSetup"); } },
+  esc: { name: "Breakout-Room", resume: () => ACTIONS.toEsc(), setup: () => { escCfg.phase = null; showView("escSetup"); } },
+  kr: { name: "Klassenrunde", resume: () => showView("krLead"), setup: () => { krCfg.cats = []; showView("krSetup"); } },
+};
+const PHASE_GAME = { quiz: "quiz", est: "est", breakout: "bo", words: "words", who: "who", logic: "logic", escape: "esc" };
+const gameRunning = (k) => !!(S[k] && !S[k].finished);
+function openGame(k) {
+  if (!gameRunning(k)) { GAMES[k].setup(); return; }
+  openModal(`<h2>${GAMES[k].name} läuft noch</h2><p>Weiterspielen oder abbrechen und neu beginnen?</p>
+    <div class="btn-row"><button class="btn" data-act="gameAbort" data-g="${k}" data-then="new">Abbrechen und neu</button>
+    <button class="btn btn-primary" data-act="gameResume" data-g="${k}">▶ Weiterspielen</button></div>`);
+}
+function gameDeltas(k) {
+  const base = (S[k] && S[k].base) || {};
+  return S.teams.filter((t) => base[t.id] != null && t.score !== base[t.id]).map((t) => [t, t.score - base[t.id]]);
+}
+function gameAbort(k, then) {
+  const d = gameDeltas(k), name = GAMES[k].name, th = then ? ` data-then="${then}"` : "";
+  openModal(`<h2>${name} abbrechen?</h2>
+    <p>${d.length ? `Punkte aus diesem Spiel: ${scoreList(d, true)}.` : "In diesem Spiel gab es noch keine Punkte."}</p>
+    <div class="btn-row"><button class="btn" data-act="closeModal">Weiterspielen</button>
+    ${d.length ? `<button class="btn" data-act="gameAbortYes" data-g="${k}" data-keep="0"${th}>Abbrechen, Punkte zurücknehmen</button>
+      <button class="btn btn-danger" data-act="gameAbortYes" data-g="${k}" data-keep="1"${th}>Abbrechen, Punkte behalten</button>`
+      : `<button class="btn btn-danger" data-act="gameAbortYes" data-g="${k}" data-keep="1"${th}>Abbrechen</button>`}</div>`);
+}
+function gameAbortYes(k, keep, then) {
+  const g = S[k]; if (!g) return;
+  if (!keep) { const base = g.base || {}; S.teams.forEach((t) => { if (base[t.id] != null) t.score = base[t.id]; }); }
+  g.finished = true; if (k === "esc") escCtx = null;
+  save(); closeModal();
+  if (then === "new") { GAMES[k].setup(); return; }
+  viewStack = []; showView("home", { noPush: true });
+  toast(`${GAMES[k].name} abgebrochen${keep ? "" : ", Punkte zurückgenommen"}.`);
+}
+// Neues Einzelspiel: Sollen die Punkte vom letzten Spiel bleiben? (In einer Lektion zählen sie immer weiter.)
+let pendingCreate = null;
+function askScoresThen(phase, fn) {
+  const has = S.teams.filter((t) => t.score);
+  if (phase != null || !has.length) { fn(); return; }
+  pendingCreate = fn;
+  const keepFirst = lessonActive();
+  openModal(`<h2>Punkte vom letzten Spiel</h2><p>Die Teams haben noch Punkte: ${scoreList(has.map((t) => [t, t.score]))}.</p>
+    <p>Soll das neue Spiel bei 0 beginnen oder weiterzählen?</p>
+    <div class="btn-row"><button class="btn${keepFirst ? " btn-primary" : ""}" data-act="startKeep">Weiterzählen</button>
+    <button class="btn${keepFirst ? "" : " btn-primary"}" data-act="startZero">Alle auf 0 und starten</button></div>`);
+}
+function runPending(zero) {
+  closeModal();
+  if (zero) { S.teams.forEach((t) => { t.score = 0; }); save(); }
+  const f = pendingCreate; pendingCreate = null; if (f) f();
+}
+// «Nächste Phase» oben in der Leiste: nicht versehentlich ein laufendes Spiel überspringen
+function nextPhaseAsk() {
+  const L = S.lesson; if (!L) return;
+  const k = PHASE_GAME[L.phases[L.idx].kind];
+  if (k && S[k] && S[k].phase === L.idx && !S[k].finished) {
+    const info = k === "quiz" && quizOpenCount() ? ` Es sind noch ${quizOpenCount()} Fragen offen.` : "";
+    openModal(`<h2>Zur nächsten Phase?</h2><p>${GAMES[k].name} ist noch nicht fertig.${info} Die bisherigen Punkte bleiben.</p>
+      <div class="btn-row"><button class="btn" data-act="closeModal">Weiterspielen</button><button class="btn btn-primary" data-act="nextPhaseYes">Nächste Phase ▸</button></div>`);
+    return;
+  }
+  nextPhase();
+}
+
 Object.assign(ACTIONS, FORMAT_ACTIONS, ESCAPE_ACTIONS, KR_ACTIONS, {
+  gameAbort: (b) => gameAbort(b.dataset.g, b.dataset.then),
+  gameAbortYes: (b) => gameAbortYes(b.dataset.g, b.dataset.keep === "1", b.dataset.then),
+  gameResume: (b) => { closeModal(); GAMES[b.dataset.g].resume(); },
+  startKeep: () => runPending(false),
+  startZero: () => runPending(true),
+  nextPhase: nextPhaseAsk,
+  nextPhaseYes: () => { const L = S.lesson, k = PHASE_GAME[L.phases[L.idx].kind]; if (k && S[k]) S[k].finished = true; save(); closeModal(); nextPhase(); },
+  openQuizSetup: () => openGame("quiz"),
+  openEstSetup: () => openGame("est"),
+  openBoSetup: () => openGame("bo"),
+  openWordsSetup: () => openGame("words"),
+  openWhoSetup: () => openGame("who"),
+  openLogicSetup: () => openGame("logic"),
+  escLeadStart: () => openGame("esc"),
+  openKr: () => openGame("kr"),
+  quizCreate: () => { if (qsCfg.cats.length < 2) { toast("Bitte mindestens 2 Kategorien wählen."); return; } askScoresThen(qsCfg.phase, quizCreate); },
+  estCreate: () => askScoresThen(esCfg.phase, estCreate),
+  boCreate: () => askScoresThen(boCfg.phase, boCreate),
+  wordsCreate: () => askScoresThen(wsCfg.phase, wordsCreate),
+  whoCreate: () => askScoresThen(whoCfg.phase, whoCreate),
+  logicCreate: () => askScoresThen(lgCfg.phase, logicCreate),
+  escCreate: () => askScoresThen(escCfg.phase, escCreate),
+  krCreate: () => { if (!krCfg.cats.length) { toast("Bitte mindestens ein Thema wählen."); return; } askScoresThen(null, krCreate); },
+  resetScores: () => openModal(`<h2>Alle Punkte auf 0?</h2><p>${scoreList(S.teams.map((t) => [t, t.score]))}</p>
+    <div class="btn-row"><button class="btn" data-act="closeModal">Abbrechen</button><button class="btn btn-danger" data-act="resetScoresYes">Auf 0 setzen</button></div>`),
+  resetScoresYes: () => { closeModal(); ACTIONS.resetScoresNow(); },
+  resetScoresNow: ACTIONS.resetScores,
+  lessonStop: () => openModal(`<h2>Lektion beenden?</h2><p>Der Ablauf wird beendet. Punkte und Spielstände bleiben.</p>
+    <div class="btn-row"><button class="btn" data-act="closeModal">Abbrechen</button><button class="btn btn-danger" data-act="lessonStopYes">Beenden</button></div>`),
+  lessonStopYes: () => { closeModal(); ACTIONS.lessonStopNow(); },
+  lessonStopNow: ACTIONS.lessonStop,
+  teamCount: (b) => {
+    const n = clamp(S.teams.length + Number(b.dataset.d), 2, 6);
+    if (n === S.teams.length) return;
+    const gone = n < S.teams.length ? S.teams[S.teams.length - 1] : null;
+    const busy = Object.keys(GAMES).some(gameRunning) || lessonActive();
+    if (gone && (gone.score || busy)) {
+      openModal(`<h2>Team «${esc(gone.name)}» entfernen?</h2><p>${gone.score ? `Das Team hat ${fmt(gone.score)} Punkte, sie gehen verloren. ` : ""}${busy ? "Es läuft gerade ein Spiel oder eine Lektion." : ""}</p>
+        <div class="btn-row"><button class="btn" data-act="closeModal">Abbrechen</button><button class="btn btn-danger" data-act="teamCountYes">Entfernen</button></div>`);
+      return;
+    }
+    S.teams = makeTeams(n, S.teams); save(); renderTeamEditor();
+  },
+  teamCountYes: () => { closeModal(); S.teams = makeTeams(S.teams.length - 1, S.teams); save(); renderTeamEditor(); },
+
   escPlayBack: () => { if (escCtx && escCtx.central) ACTIONS.escBackLead(); else { viewStack = []; showView("home", { noPush: true }); } },
 });
+let lastAct = { at: 0, el: null };
 document.addEventListener("click", (e) => {
   const b = e.target.closest("[data-act]");
   if (!b || b.disabled) return;
+  // Doppeltipp: Nach einem Tipp wird die Ansicht oft neu gezeichnet. Ein zweiter Tipp träfe dann einen anderen
+  // Knopf an derselben Stelle (z. B. «Weiter» statt «Richtig»). Gleicher Knopf (Stepper +/−) bleibt erlaubt.
+  const now = Date.now();
+  if (now - lastAct.at < 400 && lastAct.el !== b) return;
+  lastAct = { at: now, el: b };
   const f = ACTIONS[b.dataset.act];
   if (f) f(b, e);
 });
