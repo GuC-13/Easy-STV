@@ -528,7 +528,7 @@
     </details>
 
     <p class="privacy">🔒 Die App speichert nur Teamnamen und Punkte auf diesem Gerät, keine Namen von Schülerinnen und Schülern. Sie funktioniert auch offline.</p>
-    <div id="appVersionLabel">v13 · 2026-11-02</div>
+    <div id="appVersionLabel">v14 · 2026-11-02</div>
   </section>
 
   <!-- Lektions-Assistent -->
@@ -795,7 +795,7 @@
       <h1>🚪 Breakout-Room</h1>
     </div>
     <div class="card">
-      <p style="margin-top:0">Rätsel lösen, um die nächste Tür zu öffnen: fünf Räume, jeder richtige Code gibt einen Buchstaben, und hinter dem letzten Raum wartet das Schlusswort. Spielbar gemeinsam am Beamer, auf Gruppen-iPads oder als Stationen im Zimmer. Die Codes prüft die App direkt auf dem Gerät, ohne Internet.</p>
+      <p style="margin-top:0">Rätsel lösen, um die nächste Tür zu öffnen: fünf Räume, jeder richtige Code gibt einen Buchstaben, und hinter dem letzten Raum wartet das Schlusswort. Spielbar gemeinsam am Beamer, auf Gruppen-iPads oder als Stationen im Zimmer (Karten zum Ausdrucken unter «Spiel leiten» → «🗺️ Stationen im Zimmer»). Die Codes prüft die App direkt auf dem Gerät, ohne Internet.</p>
       <div class="grid2">
         <button class="btn btn-big btn-primary" data-act="escLeadStart">🖥️ Spiel leiten<small>Lehrperson, Gerät am Beamer</small></button>
         <button class="btn btn-big" data-act="escGroupStart">📱 Als Gruppe mitspielen<small>Auf dem iPad der Gruppe</small></button>
@@ -813,6 +813,7 @@
       <span class="field-label">Spielform</span>
       <div class="chips" id="escMode"></div>
       <p class="hint" id="escModeHint"></p>
+      <div class="btn-row" id="escPrintRow"></div>
       <span class="field-label">Abenteuer</span>
       <div class="topic-grid" id="escAdvs"></div>
       <span class="field-label">Spielzeit</span>
@@ -3859,6 +3860,8 @@ const ESC_MODES = [
 RENDER.escSetup = function () {
   $("#escMode").innerHTML = ESC_MODES.map(([v, l]) => `<button class="chip${escCfg.mode === v ? " on" : ""}" data-act="escModeSet" data-v="${v}">${l}</button>`).join("");
   $("#escModeHint").textContent = ESC_MODES.find((m) => m[0] === escCfg.mode)[2];
+  $("#escPrintRow").innerHTML = escCfg.mode === "stations" ? `<button class="btn" data-act="escPrintCards">🖨️ Stationskarten drucken</button>
+    <button class="btn" data-act="escPrintSolutions">📄 Lösungsblatt drucken</button><span class="hint" style="margin:0;align-self:center">für das gewählte Abenteuer unten</span>` : "";
   $("#escAdvs").innerHTML = ESCAPES.map((A) => `<button class="topic${escCfg.adv === A.id ? " on" : ""}" data-act="escAdv" data-v="${A.id}">
     <div class="ic">${A.icon}</div><h3>${A.title}</h3><p>${esc(A.intro.split(". ")[0])}.</p></button>`).join("");
   $("#escDur").innerHTML = [20, 30, 40].map((d) => `<button class="chip${escCfg.dur === d ? " on" : ""}" data-act="escDurSet" data-v="${d}">${d} Minuten</button>`).join("");
@@ -3930,6 +3933,7 @@ RENDER.escLead = function () {
       <div class="btn-row" style="margin-top:16px">
         <button class="btn btn-primary" data-act="escFinish">${finishLabel(e)}</button>
         <button class="btn btn-ghost" data-act="escShowSolution">Lösungen anzeigen</button>
+        ${mode === "stations" ? `<button class="btn btn-ghost" data-act="escPrintCards">🖨️ Karten nochmals drucken</button>` : ""}
       </div>`;
     $("#escLeadBody").innerHTML = html;
     startCountdown(e.dur * 60, "escCountdown", () => toast("Die Zeit ist um!"), endAt);
@@ -3954,7 +3958,7 @@ function escDone(teamId) {
 
 /* Drucken: Stationskarten (eine pro A4-Seite) und Lösungsblatt */
 function escPrint(kind) {
-  const A = ESC_BY_ID[S.esc ? S.esc.adv : escCfg.adv];
+  const A = ESC_BY_ID[currentView === "escLead" && S.esc ? S.esc.adv : escCfg.adv];
   let html = "";
   if (kind === "cards") {
     html = A.stations.map((st, i) => `<section class="print-card">
